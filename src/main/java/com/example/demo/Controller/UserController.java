@@ -51,14 +51,16 @@ public class UserController extends BaseController {
         }
     }
 
-    public static boolean isLoged(HttpServletRequest req){
-        HttpSession session = req.getSession();
-        if (session.isNew() || session.getAttribute("logged") == null ||
-                session.getAttribute("logged").equals(false)){
-            return false;
-        }
-        return true;
-    }
+    // the isLoged is implemented in BaseControler as validateLogin
+
+//    public static boolean isLoged(HttpServletRequest req){
+//        HttpSession session = req.getSession();
+//        if (session.isNew() || session.getAttribute("logged") == null ||
+//                session.getAttribute("logged").equals(false)){
+//            return false;
+//        }
+//        return true;
+//    }
 
 
 }

@@ -6,13 +6,18 @@ import com.example.demo.Model.POJO.User;
 import com.example.demo.Model.Utility.Exceptions.CategoryNotFoundException;
 import com.example.demo.Model.Utility.Exceptions.NotAdminException;
 import com.example.demo.Model.Utility.Exceptions.NotLoggedException;
+import jdk.nashorn.internal.ir.RuntimeNode;
+import org.apache.catalina.connector.Request;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -43,7 +48,9 @@ public abstract class BaseController {
     }
 
     protected void validateLogin(HttpSession session, Exception e, User user) throws NotLoggedException{
-        if(session.getAttribute("isLogged") == null){
+        if(session.getAttribute("isLogged") == null ||
+                session.getAttribute("isLogged").equals(false) ||
+                session.isNew()){
             throw new NotLoggedException(e.getMessage());
         }
     }

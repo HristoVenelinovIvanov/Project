@@ -1,7 +1,7 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.DAOs.ProductDao;
-import com.example.demo.Model.Product;
+import com.example.demo.Model.DAO.ProductDao;
+import com.example.demo.Model.POJO.Product;
 import com.example.demo.Model.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,5 +30,7 @@ public class ProductController extends BaseController{
         productDao.addProduct(product);
         return "Product added successfully in category " + product.getCategoryId() + " with ID: " + product.getProductId();
     }
+
+
 
 }

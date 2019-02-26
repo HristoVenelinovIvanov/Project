@@ -1,4 +1,4 @@
-package com.example.demo.Model;
+package com.example.demo.Model.POJO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -27,16 +27,16 @@ public class Product {
     //Quantity on order is the quantity that is *NOT* available
     //E.G Ordered by a user OR marked DAMAGED/NOT FOR SALE
     @JsonProperty("quantity_on_order")
-    private long quantityOnOrder;
+    private Long quantityOnOrder;
     @JsonProperty("category_id")
     private int categoryId;
     @JsonProperty("a_category_id")
-    private int aCategoryId;
+    private Integer aCategoryId;
     @JsonProperty("b_category_id")
-    private int bCategoryId;
+    private Integer bCategoryId;
     @JsonProperty("c_category_id")
-    private int cCategoryId;
-    private int discounted;
+    private Integer cCategoryId;
+    private Integer discounted;
     private String characteristics;
     @JsonProperty("product_image")
     private String productImage;

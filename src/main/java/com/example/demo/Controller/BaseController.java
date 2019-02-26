@@ -1,17 +1,15 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.ErrorMsg;
-import com.example.demo.Model.User;
+import com.example.demo.Model.POJO.ErrorMsg;
+import com.example.demo.Model.Utility.Exceptions.CategoryNotFoundException;
 import com.example.demo.Model.Utility.Exceptions.NotAdminException;
 import com.example.demo.Model.Utility.Exceptions.NotLoggedException;
-import com.example.demo.Model.Utility.Exceptions.TechnoMarketException;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
 @RestController
@@ -29,6 +27,12 @@ public abstract class BaseController {
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     public ErrorMsg isLoggedAdmin(Exception e) {
         return new ErrorMsg(e.getMessage(), HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
+    }
+
+    @ExceptionHandler({CategoryNotFoundException.class})
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ErrorMsg isCategoryValid(Exception e) {
+        return new ErrorMsg("The category entered doesn't exist", HttpStatus.BAD_GATEWAY.value(), LocalDateTime.now());
     }
 //
 //    @ExceptionHandler({NotLoggedException.class, NotAdminException.class})

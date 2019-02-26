@@ -1,7 +1,6 @@
 package com.example.demo.Model.Repository;
 
-import com.example.demo.Model.Product;
-import com.example.demo.Model.User;
+import com.example.demo.Model.POJO.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

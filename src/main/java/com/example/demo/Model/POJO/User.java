@@ -1,4 +1,4 @@
-package com.example.demo.Model;
+package com.example.demo.Model.POJO;
 
 import com.example.demo.Model.Enums.Gender;
 import com.fasterxml.jackson.annotation.JsonIgnore;

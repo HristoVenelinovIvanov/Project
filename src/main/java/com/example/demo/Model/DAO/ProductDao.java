@@ -1,6 +1,6 @@
-package com.example.demo.Model.DAOs;
+package com.example.demo.Model.DAO;
 
-import com.example.demo.Model.Product;
+import com.example.demo.Model.POJO.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 

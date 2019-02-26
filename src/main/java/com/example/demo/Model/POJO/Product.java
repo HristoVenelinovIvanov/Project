@@ -1,4 +1,4 @@
-package com.example.demo.Model;
+package com.example.demo.Model.POJO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -12,24 +12,31 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Table(name = "products")
+
 public class Product {
+
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     @JsonProperty("product_id")
     private long productId;
+    @JsonProperty("product_name")
     private String productName;
     private double price;
     private long quantity;
     //Quantity on order is the quantity that is *NOT* available
     //E.G Ordered by a user OR marked DAMAGED/NOT FOR SALE
     @JsonProperty("quantity_on_order")
-    private long quantityOnOrder;
+    private Long quantityOnOrder;
+    @JsonProperty("category_id")
     private int categoryId;
-    private int aCategoryId;
-    private int bCategoryId;
-    private int cCategoryId;
-    private int discounted;
+    @JsonProperty("a_category_id")
+    private Integer aCategoryId;
+    @JsonProperty("b_category_id")
+    private Integer bCategoryId;
+    @JsonProperty("c_category_id")
+    private Integer cCategoryId;
+    private Integer discounted;
     private String characteristics;
     @JsonProperty("product_image")
     private String productImage;

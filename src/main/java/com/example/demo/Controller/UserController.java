@@ -5,14 +5,20 @@ import com.example.demo.Model.Utility.Exceptions.UserAlreadyExistsException;
 import com.example.demo.Model.Repository.UserRepository;
 import com.example.demo.Model.POJO.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.*;
+import sun.misc.Request;
+
+import javax.persistence.Entity;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @RestController
 public class UserController extends BaseController {
 
     @Autowired
     private UserRepository userRepository;
+
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ExceptionHandler(value = UserAlreadyExistsException.class)
@@ -26,7 +32,7 @@ public class UserController extends BaseController {
     }
 
     @RequestMapping(value = "/redirect", method = RequestMethod.GET)
-    public void method(HttpServletResponse httpServletResponse) {
+    public void method(HttpServletResponse httpServletResponse){
         httpServletResponse.setHeader("Location Redirect", "/home");
         httpServletResponse.setStatus(302);
     }

@@ -19,17 +19,21 @@ public class User {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
-    @JsonProperty("user_id")
+//    @JsonProperty("user_id")
     private long id;
+    @JsonProperty("username")
     private String username;
+    @JsonProperty("password")
     private String password;
     @JsonProperty("first_name")
     private String firstName;
     @JsonProperty("last_name")
     private String lastName;
+    @JsonProperty("email")
     private String email;
-    @JsonIgnore
+    @JsonProperty("user_role_id")
     private long user_role_id = 1;
+    @JsonProperty("gender")
     private Gender gender;
 
     @Override

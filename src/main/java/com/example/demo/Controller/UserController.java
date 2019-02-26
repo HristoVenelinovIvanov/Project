@@ -29,7 +29,7 @@ public class UserController extends BaseController {
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public User logIn(@RequestBody User user, HttpSession session) {
-        if(userDao.checkIfUserExists(user.getUsername(), user.getPassword())) {
+        if (userDao.checkIfUserExists(user.getUsername(), user.getPassword())) {
             session.setAttribute("userLogged", user);
         }
         return user;

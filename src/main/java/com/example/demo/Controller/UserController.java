@@ -1,6 +1,6 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Controller.Exceptions.UserAlreadyExistsException;
+import com.example.demo.Model.Utility.Exceptions.UserAlreadyExistsException;
 import com.example.demo.Model.Repository.UserRepository;
 import com.example.demo.Model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
-public class UserController {
+public class UserController extends BaseController {
 
     @Autowired
     private UserRepository userRepository;
@@ -17,6 +17,7 @@ public class UserController {
     @ExceptionHandler(value = UserAlreadyExistsException.class)
     public String registerUser(@RequestBody User user) {
         userRepository.save(user);
+       // sendEmail(user.getEmail());
         return "You have registered successfully, please check your e-mail to verify your account!";
     }
 
@@ -25,5 +26,7 @@ public class UserController {
         httpServletResponse.setHeader("Location", "/home");
         httpServletResponse.setStatus(302);
     }
+
+
 
 }

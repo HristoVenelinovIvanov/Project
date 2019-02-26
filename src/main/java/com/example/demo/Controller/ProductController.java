@@ -1,5 +1,6 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Model.DAOs.ProductDao;
 import com.example.demo.Model.Product;
 import com.example.demo.Model.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,20 +12,22 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-public class ProductController {
+public class ProductController extends BaseController{
 
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private ProductDao productDao;
 
 
-    @RequestMapping(value = "/home", method = RequestMethod.GET)
+    @RequestMapping(value = "/products", method = RequestMethod.GET)
     public List<Product> displayAllProducts() {
         return productRepository.findAll();
     }
 
     @RequestMapping(value = "/products/add", method = RequestMethod.POST)
     public String addProduct(@RequestBody Product product) {
-        productRepository.save(product);
+        productDao.addProduct(product);
         return "Product added successfully in category " + product.getCategoryId() + " with ID: " + product.getProductId();
     }
 

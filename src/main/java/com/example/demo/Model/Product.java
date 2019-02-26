@@ -12,12 +12,15 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Table(name = "products")
+
 public class Product {
+
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     @JsonProperty("product_id")
     private long productId;
+    @JsonProperty("product_name")
     private String productName;
     private double price;
     private long quantity;
@@ -25,9 +28,13 @@ public class Product {
     //E.G Ordered by a user OR marked DAMAGED/NOT FOR SALE
     @JsonProperty("quantity_on_order")
     private long quantityOnOrder;
+    @JsonProperty("category_id")
     private int categoryId;
+    @JsonProperty("a_category_id")
     private int aCategoryId;
+    @JsonProperty("b_category_id")
     private int bCategoryId;
+    @JsonProperty("c_category_id")
     private int cCategoryId;
     private int discounted;
     private String characteristics;

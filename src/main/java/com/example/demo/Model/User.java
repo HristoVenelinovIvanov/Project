@@ -22,7 +22,6 @@ public class User {
     @JsonProperty("user_id")
     private long id;
     private String username;
-    @JsonIgnore
     private String password;
     @JsonProperty("first_name")
     private String firstName;
@@ -32,6 +31,7 @@ public class User {
     @JsonIgnore
     private long user_role_id = 1;
     private Gender gender;
+    private boolean isLogged = false;
 
     @Override
     public String toString() {

@@ -12,9 +12,8 @@ public class UserRegisterDTO {
     private String password;
     private String confirmPassword;
     private Gender gender;
-    private int day;
-    private int month;
-    private int year;
+
+
 
 
 }

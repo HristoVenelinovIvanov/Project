@@ -18,4 +18,6 @@ public class ProductDao {
         jdbcTemplate.update(sql, product.getProductName(), product.getPrice(), product.getQuantity(), product.getCategoryId(), product.getACategoryId(), product.getCharacteristics());
         return "Product added to category: " + product.getCategoryId() + " with ID: " + product.getProductId();
     }
+
+
 }

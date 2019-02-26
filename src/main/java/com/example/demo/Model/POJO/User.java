@@ -31,7 +31,6 @@ public class User {
     @JsonIgnore
     private long user_role_id = 1;
     private Gender gender;
-    private boolean isLogged = false;
 
     @Override
     public String toString() {

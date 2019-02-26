@@ -4,7 +4,10 @@ import com.example.demo.Model.Utility.Exceptions.UserAlreadyExistsException;
 import com.example.demo.Model.Repository.UserRepository;
 import com.example.demo.Model.POJO.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -46,6 +49,15 @@ public class UserController extends BaseController {
         else {
             response.sendRedirect("/login");
         }
+    }
+
+    public static boolean isLoged(HttpServletRequest req){
+        HttpSession session = req.getSession();
+        if (session.isNew() || session.getAttribute("logged") == null ||
+                session.getAttribute("logged").equals(false)){
+            return false;
+        }
+        return true;
     }
 
 

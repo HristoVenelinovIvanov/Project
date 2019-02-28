@@ -6,6 +6,7 @@ import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserNotFoundExep
 import com.example.demo.Model.Utility.Exceptions.ValidationExceptions.EmailNotValidException;
 import com.example.demo.Model.Utility.Exceptions.ValidationExceptions.InvalidCredentinalsException;
 import com.example.demo.Model.Utility.Exceptions.ValidationExceptions.PasswordTooShortException;
+import com.example.demo.Model.Utility.Exceptions.ValidationExceptions.ThereIsSpaceExeption;
 
 public class UserValidator {
 
@@ -17,7 +18,8 @@ public class UserValidator {
         if (user.getLastName().isEmpty() || user.getLastName() == null) {
             throw new InvalidCredentinalsException("Last name field must not be empty!");
         }
-        if (user.getPassword().isEmpty() || user.getPassword() == null || user.getPassword().length() < 5) {
+        if (user.getPassword().isEmpty() || user.getPassword() == null ||
+                user.getPassword().length() < 5 || user.getPassword().contains(" ")) {
             throw new PasswordTooShortException();
         }
         if (isValidEmailAddress(user.getEmail())) {
@@ -35,7 +37,7 @@ public class UserValidator {
     }
 
     public boolean validateLoginFields(User user) throws TechnoMarketException {
-
+        user.setPassword(user.getPassword().trim());
         if (isValidEmailAddress(user.getEmail())) {
             if (!(user.getPassword().isEmpty() || user.getPassword() == null)) {
                 return true;
@@ -43,5 +45,4 @@ public class UserValidator {
         }
         throw new UserNotFoundExeption();
     }
-
 }

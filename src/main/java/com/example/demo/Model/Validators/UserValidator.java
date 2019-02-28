@@ -6,8 +6,9 @@ import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserNotFoundExep
 import com.example.demo.Model.Utility.Exceptions.ValidationExceptions.EmailNotValidException;
 import com.example.demo.Model.Utility.Exceptions.ValidationExceptions.InvalidCredentinalsException;
 import com.example.demo.Model.Utility.Exceptions.ValidationExceptions.PasswordTooShortException;
-import com.example.demo.Model.Utility.Exceptions.ValidationExceptions.ThereIsSpaceExeption;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserValidator {
 
     public boolean validateEmptyFields(User user) throws TechnoMarketException {

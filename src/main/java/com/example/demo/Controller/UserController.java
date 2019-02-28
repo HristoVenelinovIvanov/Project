@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 public class UserController extends BaseController {
@@ -22,17 +20,24 @@ public class UserController extends BaseController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserValidator userValidator;
+
     Map<Integer, Enumeration<Product>> productsInCart = new HashMap<>();
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     //99% finished
-    public void registerUser(@RequestBody User user) throws TechnoMarketException {
-        if (userRepository.findByEmail(user.getEmail()) == null &&
-                new UserValidator().validateEmptyFields(user)) {
-            userRepository.save(user);
-        } else {
-            throw new UserAlreadyExistsException();
+    public void registerUser(@RequestBody User user, HttpServletResponse response) throws TechnoMarketException, IOException {
+        if (userValidator.validateEmptyFields(user)) {
+            if (userRepository.findByEmail(user.getEmail()) == null) {
+                userRepository.save(user);
+
+            }
+            else {
+                throw new UserAlreadyExistsException();
+            }
         }
+        response.getWriter().append("You have been registered successfully, please verify your account by entering your email address.");
     }
 
     //show user by id
@@ -46,16 +51,14 @@ public class UserController extends BaseController {
     //login user
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public User logIn(@RequestBody User user, HttpSession session) throws TechnoMarketException {
-        if (user != null) {
-            User u = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
-            //NOT FINISHED
-            if (new UserValidator().validateLoginFields(user)) {
-                if (u != null) {
-                    session.setAttribute("userLogged", u);
-                    return u;
-                }
-                throw new UserNotFoundExeption();
+        User u = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
+        //NOT FINISHED
+        if (new UserValidator().validateLoginFields(user)) {
+            if (u != null) {
+                session.setAttribute("userLogged", u);
+                return u;
             }
+            throw new UserNotFoundExeption();
         }
         throw new UserNotFoundExeption();
     }
@@ -72,6 +75,13 @@ public class UserController extends BaseController {
             response.sendRedirect("/login");
         }
     }
+
+
+    @RequestMapping(value = "products/addToFavorites", method = RequestMethod.POST)
+    public void addToFavorites(@PathVariable("userId") long userId, @PathVariable("productId") long productId) {
+        //TODO if logged - add to user favorites
+    }
+
 
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public void deleteUser(HttpSession session, HttpServletResponse response) throws IOException {

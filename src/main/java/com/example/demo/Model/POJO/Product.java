@@ -10,8 +10,8 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Table(name = "products")
-public class Product {
 
+public class Product {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
@@ -23,8 +23,10 @@ public class Product {
     private double price;
     @Column(name = "quantity")
     private long quantity;
+
     //Quantity on order is the quantity that is *NOT* available
     //E.G Ordered by a user OR marked DAMAGED/NOT FOR SALE
+
     @Column(name = "quantity_on_order")
     private Long quantityOnOrder;
     @Column(name = "category_id")

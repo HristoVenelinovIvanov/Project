@@ -27,27 +27,32 @@ public class UserController extends BaseController {
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     //99% finished
     public void registerUser(@RequestBody User user) throws TechnoMarketException {
-        if(userRepository.findByEmail(user.getEmail()) == null && new UserValidator().validateEmptyFields(user)) {
+        if (userRepository.findByEmail(user.getEmail()) == null && new UserValidator().validateEmptyFields(user)) {
             userRepository.save(user);
-        }
-        else {
+        } else {
             throw new UserAlreadyExistsException();
         }
     }
 
+    //show user by id
+    @RequestMapping (value = "/users/{userId}", method = RequestMethod.GET)
+        public User showAllUsers(@PathVariable("userId") long userId, HttpSession session){
+            User user = userRepository.findByUserId(userId);
+            session.setAttribute("userId", user);
+            return user;
+    }
 
+    //login user
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public User logIn(@RequestBody User user, HttpSession session) throws TechnoMarketException{
-
+    public User logIn(@RequestBody User user, HttpSession session) throws TechnoMarketException {
         User u = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
-
         //NOT FINISHED
         if (new UserValidator().validateLoginFields(user)) {
             if (u != null) {
                 session.setAttribute("userLogged", u);
                 return u;
             }
-                throw new UserNotFoundExeption();
+            throw new UserNotFoundExeption();
         }
         throw new UserNotFoundExeption();
     }

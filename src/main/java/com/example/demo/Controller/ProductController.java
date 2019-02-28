@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 
 @RestController
@@ -23,7 +24,7 @@ public class ProductController extends BaseController{
 
 
     @RequestMapping(value = "/products", method = RequestMethod.GET)
-    public @ResponseBody List<Product> displayAllProducts(@RequestParam(value="product_id", required = true) Integer product_id) {
+    public List<Product> displayAllProducts() {
         return productRepository.findAll();
     }
 

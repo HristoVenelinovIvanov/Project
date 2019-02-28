@@ -58,16 +58,17 @@ public class UserController extends BaseController {
         }
     }
 
-    @RequestMapping(value = "/add/cart")
-    public void addToCart(HttpServletRequest req, HttpServletResponse resp){
-        HttpSession session = req.getSession();
-        Integer accessCount = (Integer) session.getAttribute("accessCount");
-        Enumeration atributes = req.getAttributeNames();
-        productsInCart.put(accessCount, atributes);
-        for (Map.Entry<Integer, Enumeration<Product>> p : productsInCart.entrySet()){
-            System.out.println(p);
-        }
+    @RequestMapping(value = "/delete", method = RequestMethod.POST)
+    public void deleteUser(HttpSession session, HttpServletResponse response) throws IOException {
+        //TODO if Admin - delete user
     }
+
+    @RequestMapping(value = "/edit", method = RequestMethod.POST)
+    public void editUser(HttpSession session, HttpServletResponse response) throws IOException {
+        //TODO if logged - edit user profile
+    }
+
+
 
     // the isLoged is implemented in BaseControler as validateLogin
 

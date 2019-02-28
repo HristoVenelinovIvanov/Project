@@ -1,15 +1,14 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.POJO.Product;
-import com.example.demo.Model.Utility.Exceptions.UserAlreadyExistsException;
+import com.example.demo.Model.Utility.Exceptions.TechnoMarketException;
+import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserAlreadyExistsException;
 import com.example.demo.Model.Repository.UserRepository;
 import com.example.demo.Model.POJO.User;
+import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserNotFoundExeption;
+import com.example.demo.Model.Validators.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.server.Session;
-import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -23,26 +22,34 @@ public class UserController extends BaseController {
     @Autowired
     private UserRepository userRepository;
 
-
     Map<Integer, Enumeration<Product>> productsInCart = new HashMap<>();
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    @ExceptionHandler(value = UserAlreadyExistsException.class)
-    public String registerUser(@RequestBody User user) {
-        //validate user
-        userRepository.save(user);
-
-       // sendEmail(user.getEmail());
-        return "You have registered successfully, please check your e-mail to verify your account!";
+    //99% finished
+    public void registerUser(@RequestBody User user) throws TechnoMarketException {
+        if(userRepository.findByEmail(user.getEmail()) == null && new UserValidator().validateEmptyFields(user)) {
+            userRepository.save(user);
+        }
+        else {
+            throw new UserAlreadyExistsException();
+        }
     }
 
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public User logIn(@RequestBody User user, HttpSession session) {
-        if (userDao.checkIfUserExists(user.getUsername(), user.getPassword())) {
-            session.setAttribute("userLogged", user);
+    public User logIn(@RequestBody User user, HttpSession session) throws TechnoMarketException{
+
+        User u = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
+
+        //NOT FINISHED
+        if (new UserValidator().validateLoginFields(user)) {
+            if (u != null) {
+                session.setAttribute("userLogged", u);
+                return u;
+            }
+                throw new UserNotFoundExeption();
         }
-        return user;
+        throw new UserNotFoundExeption();
     }
 
     @RequestMapping(value = "/logout", method = RequestMethod.POST)

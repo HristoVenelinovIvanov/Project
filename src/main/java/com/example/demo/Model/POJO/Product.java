@@ -1,11 +1,8 @@
 package com.example.demo.Model.POJO;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import javax.persistence.*;
 
 @NoArgsConstructor
@@ -13,33 +10,36 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Table(name = "products")
-@JsonAutoDetect(fieldVisibility=JsonAutoDetect.Visibility.ANY, getterVisibility=JsonAutoDetect.Visibility.NONE, setterVisibility=JsonAutoDetect.Visibility.NONE, creatorVisibility=JsonAutoDetect.Visibility.NONE)
 public class Product {
 
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
-    @JsonProperty(value = "product_id")
+    @Column(name = "product_id")
     private long productId;
-    @JsonProperty(value = "product_name")
+    @Column(name = "product_name")
     private String productName;
+    @Column(name = "price")
     private double price;
+    @Column(name = "quantity")
     private long quantity;
     //Quantity on order is the quantity that is *NOT* available
     //E.G Ordered by a user OR marked DAMAGED/NOT FOR SALE
-    @JsonProperty(value = "quantity_on_order")
+    @Column(name = "quantity_on_order")
     private Long quantityOnOrder;
-    @JsonProperty(value = ("category_id"))
+    @Column(name = "category_id")
     private int categoryId;
-    @JsonProperty(value = "a_category_id")
+    @Column(name = "a_category_id")
     private Integer aCategoryId;
-    @JsonProperty(value = "b_category_id")
+    @Column(name = "b_category_id")
     private Integer bCategoryId;
-    @JsonProperty(value = "c_category_id")
+    @Column(name = "c_category_id")
     private Integer cCategoryId;
+    @Column(name = "discounted")
     private Integer discounted;
+    @Column(name = "characteristics")
     private String characteristics;
-    @JsonProperty(value ="product_image")
+    @Column(name = "product_image")
     private String productImage;
 
 

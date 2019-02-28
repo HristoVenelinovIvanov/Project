@@ -3,7 +3,6 @@ package com.example.demo.Model.DAO;
 import com.example.demo.Model.POJO.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 

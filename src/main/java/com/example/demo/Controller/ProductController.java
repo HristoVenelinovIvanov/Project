@@ -3,18 +3,15 @@ package com.example.demo.Controller;
 import com.example.demo.Model.DAO.ProductDao;
 import com.example.demo.Model.POJO.Product;
 import com.example.demo.Model.Repository.ProductRepository;
+import com.example.demo.Model.Utility.Exceptions.UserExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
-
-import javax.persistence.Table;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 public class ProductController extends BaseController{
@@ -31,7 +28,8 @@ public class ProductController extends BaseController{
     }
 
     @RequestMapping(value = "/products/add", method = RequestMethod.POST)
-    public String addProduct(@RequestBody Product product) {
+    public String addProduct(@RequestBody Product product, HttpSession session, Exception e) throws NotLoggedException {
+        validateLogin(session, e);
         productDao.addProduct(product);
         return "Product added successfully in category " + product.getCategoryId() + " with ID: " + product.getProductId();
     }

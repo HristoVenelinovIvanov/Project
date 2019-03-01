@@ -1,11 +1,10 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.DAO.UserDao;
 import com.example.demo.Model.POJO.ErrorMsg;
 import com.example.demo.Model.Utility.Exceptions.TechnoMarketException;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.NotLoggedException;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.log4j.Priority;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -24,6 +23,7 @@ public abstract class BaseController {
     @ExceptionHandler({TechnoMarketException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ErrorMsg invalidCredentials(Exception e) {
+        log.log(Priority.WARN, e.getMessage(), e);
         return new ErrorMsg(e.getMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
     }
 
@@ -31,12 +31,14 @@ public abstract class BaseController {
     @ExceptionHandler({Exception.class})
     @ResponseStatus(value = HttpStatus.I_AM_A_TEAPOT)
     protected ErrorMsg handleMyErrors(Exception e) {
+        log.log(Priority.WARN, e.getMessage(), e);
         return new ErrorMsg(e.getMessage(), HttpStatus.I_AM_A_TEAPOT.value(), LocalDateTime.now());
     }
 
     @ExceptionHandler({MessagingException.class})
     @ResponseStatus(value = HttpStatus.REQUEST_TIMEOUT)
     protected ErrorMsg handleEmailError(Exception e) {
+        log.log(Priority.WARN, e.getMessage(), e);
         return new ErrorMsg(e.getMessage(), HttpStatus.REQUEST_TIMEOUT.value(), LocalDateTime.now());
     }
 

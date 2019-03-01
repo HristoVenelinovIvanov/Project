@@ -7,9 +7,12 @@ import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserAlreadyExist
 import com.example.demo.Model.Repository.UserRepository;
 import com.example.demo.Model.POJO.User;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserNotFoundExeption;
+import com.example.demo.Model.Utility.Exceptions.UserExceptions.UsersNotAvailableException;
 import com.example.demo.Model.Utility.MailUtil;
 import com.example.demo.Model.Validators.UserValidator;
 import org.mindrot.jbcrypt.BCrypt;
+import org.omg.CORBA.UserException;
+import org.omg.PortableInterceptor.USER_EXCEPTION;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
@@ -55,12 +58,31 @@ public class UserController extends BaseController {
         response.getWriter().append("You have been registered successfully, please verify your account by entering your email address.");
     }
 
-    //show user by id
+    //Shows all users
+    @RequestMapping (value = "/users", method = RequestMethod.GET)
+    public List<User> showAllUsers() throws UsersNotAvailableException{
+            //TODO Validate ADMIN ONLY
+
+            List<User> users = userRepository.findAll();
+
+            if (users.size() == 0) {
+                throw new UsersNotAvailableException();
+            }
+        return users;
+    }
+
+    //Shows user by ID
     @RequestMapping (value = "/users/{userId}", method = RequestMethod.GET)
-        public User showAllUsers(@PathVariable("userId") long userId, HttpSession session){
+        public User showUserById(@PathVariable("userId") long userId, HttpSession session) throws UsersNotAvailableException{
+            //TODO Validate ADMIN ONLY
+
             User user = userRepository.findByUserId(userId);
-            session.setAttribute("userId", user);
-            return user;
+
+            if (user != null) {
+                session.setAttribute("userId", user);
+                return user;
+            }
+            throw new UsersNotAvailableException();
     }
 
     //login user
@@ -85,8 +107,9 @@ public class UserController extends BaseController {
         throw new UserNotFoundExeption();
     }
 
-    @RequestMapping(value = "/logout", method = RequestMethod.POST)
-    public void logOut (HttpSession session, HttpServletResponse response) throws IOException {
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    public void logOut (Exception e, HttpSession session, HttpServletResponse response) throws Exception {
+        validateLogin(session, e);
         if (session != null) {
             //A little bit overkill?
             session = null;

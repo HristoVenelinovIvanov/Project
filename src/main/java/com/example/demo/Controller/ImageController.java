@@ -32,7 +32,7 @@ public class ImageController {
         File newImage = new File(IMAGE_DIR +name);
         FileOutputStream fos = new FileOutputStream(newImage);
         fos.write(bytes);
-     //   user.setImageUrl(name);
+        user.setImageUrl(name);
         userRepository.save(user);
     }
 

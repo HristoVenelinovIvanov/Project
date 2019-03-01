@@ -1,5 +1,6 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Model.DAO.UserDao;
 import com.example.demo.Model.POJO.Product;
 import com.example.demo.Model.Utility.Exceptions.TechnoMarketException;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserAlreadyExistsException;
@@ -8,9 +9,9 @@ import com.example.demo.Model.POJO.User;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserNotFoundExeption;
 import com.example.demo.Model.Utility.MailUtil;
 import com.example.demo.Model.Validators.UserValidator;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -22,21 +23,26 @@ public class UserController extends BaseController {
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private UserValidator userValidator;
+    @Autowired
+    protected UserDao userDao;
 
     Map<Integer, Enumeration<Product>> productsInCart = new HashMap<>();
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     //99% finished
-    public void registerUser(@RequestBody User user, HttpServletResponse response) throws Exception {
-        if (userValidator.validateEmptyFields(user)) {
-            if (userRepository.findByEmail(user.getEmail()) == null) {
-                userRepository.save(user);
+    public void registerUser(@RequestBody User u, HttpServletResponse response) throws Exception {
+
+        if (userValidator.validateEmptyFields(u)) {
+            if (userRepository.findByEmail(u.getEmail()) == null) {
+
+                u.setPassword(BCrypt.hashpw(u.getPassword(), BCrypt.gensalt()));
+                userRepository.save(u);
+
                 new Thread( () -> {
                     try {
-                        MailUtil.sendMail("technomarket.project@gmail.com", user.getEmail(), "Account verification", "Please blink 5 times to verify your account");
+                        MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", "Please do a backflip to verify your account!");
                     } catch (MessagingException e) {
                         //TODO Deal with email not sending
                     }
@@ -59,13 +65,20 @@ public class UserController extends BaseController {
 
     //login user
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public User logIn(@RequestBody User user, HttpSession session) throws TechnoMarketException {
-        User u = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
-        //NOT FINISHED
-        if (new UserValidator().validateLoginFields(user)) {
-            if (u != null) {
-                session.setAttribute("userLogged", u);
-                return u;
+    public User logIn(@RequestBody User u, HttpSession session) throws TechnoMarketException {
+        //90% finished
+        if (userValidator.validateLoginFields(u)) {
+
+            String crypted = userDao.findHashedPassword(u.getEmail());
+
+            if (BCrypt.checkpw(u.getPassword(), crypted)) {
+
+                if (userRepository.findByEmailAndPassword(u.getEmail(), crypted) != null) {
+                    User user = userRepository.findByEmailAndPassword(u.getEmail(), crypted);
+                    session.setAttribute("userLogged", user);
+                    return user;
+                }
+                throw new UserNotFoundExeption();
             }
             throw new UserNotFoundExeption();
         }
@@ -101,19 +114,5 @@ public class UserController extends BaseController {
     public void editUser(HttpSession session, HttpServletResponse response) throws IOException {
         //TODO if logged - edit user profile
     }
-
-
-
-    // the isLoged is implemented in BaseControler as validateLogin
-
-//    public static boolean isLoged(HttpServletRequest req){
-//        HttpSession session = req.getSession();
-//        if (session.isNew() || session.getAttribute("logged") == null ||
-//                session.getAttribute("logged").equals(false)){
-//            return false;
-//        }
-//        return true;
-//    }
-
 
 }

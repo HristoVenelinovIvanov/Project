@@ -7,7 +7,7 @@ import javax.mail.internet.MimeMessage;
 import java.util.Date;
 import java.util.Properties;
 
-public class MailUtil {
+public abstract class MailUtil {
 
     public static void sendMail(String from, String to, String subject, String content) throws MessagingException {
         Properties props = new Properties();

@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
@@ -17,9 +18,7 @@ import java.time.LocalDateTime;
 public abstract class BaseController {
 
     static Logger log = Logger.getLogger(BaseController.class.getName());
-
-    @Autowired
-    protected UserDao userDao;
+    protected static final String serverEmailAddress = "technomarket.project@gmail.com";
 
 
     @ExceptionHandler({TechnoMarketException.class})
@@ -35,16 +34,20 @@ public abstract class BaseController {
         return new ErrorMsg(e.getMessage(), HttpStatus.I_AM_A_TEAPOT.value(), LocalDateTime.now());
     }
 
+    @ExceptionHandler({MessagingException.class})
+    @ResponseStatus(value = HttpStatus.REQUEST_TIMEOUT)
+    protected ErrorMsg handleEmailError(Exception e) {
+        return new ErrorMsg(e.getMessage(), HttpStatus.REQUEST_TIMEOUT.value(), LocalDateTime.now());
+    }
+
 
     protected void validateLogin(HttpSession session, Exception e) throws NotLoggedException{
-        if(session.getAttribute("isLogged") == null ||
-                session.getAttribute("isLogged").equals(false) ||
+        if(session.getAttribute("userLogged") == null ||
+                session.getAttribute("userLogged").equals(false) ||
                 session.isNew()){
             throw new NotLoggedException(e.getMessage());
         }
     }
-
-
 
 
     //

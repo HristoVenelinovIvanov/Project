@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import javax.persistence.*;
-import java.time.LocalDate;
-import java.util.List;
 
 
 @Getter
@@ -33,8 +31,6 @@ public class User {
     private long userRoleId = 1;
     @Column(name = "gender")
     private Gender gender;
-    private List<Product> favorites;
-
 
 }
 

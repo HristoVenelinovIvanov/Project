@@ -6,9 +6,12 @@ import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserAlreadyExist
 import com.example.demo.Model.Repository.UserRepository;
 import com.example.demo.Model.POJO.User;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserNotFoundExeption;
+import com.example.demo.Model.Utility.MailUtil;
 import com.example.demo.Model.Validators.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -27,11 +30,17 @@ public class UserController extends BaseController {
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     //99% finished
-    public void registerUser(@RequestBody User user, HttpServletResponse response) throws TechnoMarketException, IOException {
+    public void registerUser(@RequestBody User user, HttpServletResponse response) throws Exception {
         if (userValidator.validateEmptyFields(user)) {
             if (userRepository.findByEmail(user.getEmail()) == null) {
                 userRepository.save(user);
-
+                new Thread( () -> {
+                    try {
+                        MailUtil.sendMail("technomarket.project@gmail.com", user.getEmail(), "Account verification", "Please blink 5 times to verify your account");
+                    } catch (MessagingException e) {
+                        //TODO Deal with email not sending
+                    }
+                }).start();
             }
             else {
                 throw new UserAlreadyExistsException();

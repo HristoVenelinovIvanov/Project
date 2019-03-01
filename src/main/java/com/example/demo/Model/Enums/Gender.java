@@ -1,6 +1,5 @@
 package com.example.demo.Model.Enums;
 
-import javax.persistence.Entity;
 
 //@Entity
 public enum Gender {

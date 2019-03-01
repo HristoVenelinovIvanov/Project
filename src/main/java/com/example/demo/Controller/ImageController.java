@@ -5,7 +5,6 @@ import com.example.demo.Model.POJO.User;
 import com.example.demo.Model.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.File;

@@ -10,9 +10,9 @@ import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserNotFoundExep
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.UsersNotAvailableException;
 import com.example.demo.Model.Utility.MailUtil;
 import com.example.demo.Model.Validators.UserValidator;
+import com.github.lambdaexpression.annotation.EnableRequestBodyParam;
+import com.github.lambdaexpression.annotation.RequestBodyParam;
 import org.mindrot.jbcrypt.BCrypt;
-import org.omg.CORBA.UserException;
-import org.omg.PortableInterceptor.USER_EXCEPTION;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.*;
 
 @RestController
+@EnableRequestBodyParam
 public class UserController extends BaseController {
 
     @Autowired
@@ -45,7 +46,7 @@ public class UserController extends BaseController {
 
                 new Thread( () -> {
                     try {
-                        MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", "Please do a backflip to verify your account!");
+                        MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", MailUtil.CONFIRM_MESSAGE);
                     } catch (MessagingException e) {
                         //TODO Deal with email not sending
                     }
@@ -85,7 +86,7 @@ public class UserController extends BaseController {
             throw new UsersNotAvailableException();
     }
 
-    //login user
+    //Login user
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public User logIn(@RequestBody User u, HttpSession session) throws TechnoMarketException {
         //90% finished
@@ -118,6 +119,31 @@ public class UserController extends BaseController {
         }
         else {
             response.sendRedirect("/login");
+        }
+    }
+
+    @RequestMapping(value = "/login/forgottenPassword/{email}", method = RequestMethod.GET)
+    public void forgottenPassword(@PathVariable("email") String email, HttpServletResponse response) throws MessagingException, IOException {
+
+        MailUtil.sendMail(serverEmailAddress, email, "Reset password", MailUtil.FORGOTEN_PASSWORD + userDao.getUserId(email));
+        response.getWriter().append("Email has been sent, please check your email.");
+
+    }
+
+    @RequestMapping(value = "/users/resetPassword/{userId}", method = RequestMethod.POST)
+    public void resetForgottenPassword(@PathVariable("userId") long userId, @RequestBodyParam(name = "password") String password, HttpServletResponse response) throws Exception {
+
+        User user = userRepository.findByUserId(userId);
+
+        if (user != null) {
+            user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
+            userRepository.save(user);
+            MailUtil.sendMail(serverEmailAddress, user.getEmail(), "Password reset", MailUtil.PASSWORD_RESET);
+            response.getWriter().append("Password reset successfully! \nRedirecting to login page...");
+            //TODO Waits 5 seconds then redirect to /login
+        }
+        else {
+            throw new UserNotFoundExeption();
         }
     }
 

@@ -31,6 +31,8 @@ public class User {
     private long userRoleId = 1;
     @Column(name = "gender")
     private Gender gender;
+    @Column(name = "image")
+    private String imageUrl;
 
 }
 

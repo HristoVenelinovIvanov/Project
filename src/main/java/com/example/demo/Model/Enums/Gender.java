@@ -1,7 +1,6 @@
 package com.example.demo.Model.Enums;
 
 
-//@Entity
 public enum Gender {
 
     MALE() {

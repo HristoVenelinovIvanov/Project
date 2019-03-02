@@ -21,10 +21,10 @@ public class ProductValidator {
         if (product.getPrice() < 0.00) {
             throw new PriceNotSetException();
         }
-        if (product.getQuantity() < 0) {
+        if (product.getQuantity() <= 0) {
             throw new QuantityNotValidException("Please enter valid product quantity!");
         }
-        if (product.getCategoryId() < 0 || productCategoryDTO.categories(product.getCategoryId())) {
+        if (product.getCategoryId() <= 0 || productCategoryDTO.categoryExists(product.getCategoryId())) {
             throw new CategoryNotFoundException();
         }
         if (product.getQuantityOnOrder() < 0) {

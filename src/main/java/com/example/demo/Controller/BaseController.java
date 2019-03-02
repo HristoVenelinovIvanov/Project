@@ -1,7 +1,6 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.POJO.ErrorMsg;
-import com.example.demo.Model.Utility.Exceptions.ProductExceptions.ProductDoesNotExistException;
 import com.example.demo.Model.Utility.Exceptions.TechnoMarketException;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.NotLoggedException;
 import com.github.lambdaexpression.annotation.EnableRequestBodyParam;
@@ -22,14 +21,12 @@ public abstract class BaseController {
     static Logger log = Logger.getLogger(BaseController.class.getName());
     static final String serverEmailAddress = "technomarket.project@gmail.com";
 
-
     @ExceptionHandler({TechnoMarketException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ErrorMsg invalidCredentials(Exception e) {
         log.log(Priority.WARN, e.getMessage(), e);
         return new ErrorMsg(e.getMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
     }
-
 
     @ExceptionHandler({Exception.class})
     @ResponseStatus(value = HttpStatus.I_AM_A_TEAPOT)
@@ -44,7 +41,6 @@ public abstract class BaseController {
         log.log(Priority.WARN, e.getMessage(), e);
         return new ErrorMsg(e.getMessage(), HttpStatus.REQUEST_TIMEOUT.value(), LocalDateTime.now());
     }
-
 
     protected void validateLogin(HttpSession session, Exception e) throws NotLoggedException{
         if(session.getAttribute("userLogged") == null ||

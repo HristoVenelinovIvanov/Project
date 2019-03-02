@@ -1,7 +1,6 @@
 package com.example.demo.Model.POJO;
 
 import com.example.demo.Model.Enums.Gender;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,6 +33,8 @@ public class User {
     private Gender gender;
     @Column(name = "image")
     private String imageUrl;
+    @Column(name = "verified")
+    private int verified = 0;
 
 
 }

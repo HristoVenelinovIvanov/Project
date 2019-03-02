@@ -5,16 +5,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProductDao {
+public class UserFavoritesDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public boolean productExists(long productId) {
+    public boolean addToFavorites(long userId, long productId) {
 
-        String sql = "SELECT COUNT(*) FROM products WHERE product_id = ?";
+        String sql = "INSERT INTO user_favorites (user_id, product_id) VALUES (?, ?)";
 
-        return jdbcTemplate.queryForObject(sql, new Object[] {productId}, long.class) > 0;
+        jdbcTemplate.update(sql, userId, productId);
+        return true;
     }
 
 }

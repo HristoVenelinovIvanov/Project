@@ -41,14 +41,3 @@ public class Product {
 
 }
 
-
-/*
-{
-    "productName" : "LENOVO LEGION Y530-15ICH 81FV0196BM",
-	"price": 2299.00,
-	"quantity": 20,
-    "categoryId" : 2,
-    "discounted" : 0,
-    "characteristics" : "DISPLAY: 15.6 FHD IPS AG 250N 60 (1920 X 1080)CPU: INTEL® I7-8750H RAM: 16G(1X16GBDDR4 2666) HDD: 1TB 7MM 5400RPM SSD: 128G M.2 PCIE 2242 VIDEO: GEFORCE GTX 1050, TI 4 GB PORTS: CARD READER 4-IN-1, 3X USB 3.1, 1X USB-C, 1X HDMI, 3.5 MM КОМБО ЖАК ЗА МИКРОФОН И СЛУШАЛКИ OS: FREE-DOS БАТЕРИЯ: 3CELL 52.5WHV ЦВЯТ: ЧЕРЕН ТЕГЛО: 2.30 KГ"
-}
- */

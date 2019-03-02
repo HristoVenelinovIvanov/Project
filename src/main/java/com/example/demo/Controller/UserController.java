@@ -3,11 +3,9 @@ package com.example.demo.Controller;
 import com.example.demo.Model.DAO.UserDao;
 import com.example.demo.Model.POJO.Product;
 import com.example.demo.Model.Utility.Exceptions.TechnoMarketException;
-import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserAlreadyExistsException;
+import com.example.demo.Model.Utility.Exceptions.UserExceptions.*;
 import com.example.demo.Model.Repository.UserRepository;
 import com.example.demo.Model.POJO.User;
-import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserNotFoundExeption;
-import com.example.demo.Model.Utility.Exceptions.UserExceptions.UsersNotAvailableException;
 import com.example.demo.Model.Utility.Mail.MailUtil;
 import com.example.demo.Model.Utility.Validators.UserValidator;
 import com.github.lambdaexpression.annotation.RequestBodyParam;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
 
@@ -34,8 +31,8 @@ public class UserController extends BaseController {
 
     Map<Integer, Enumeration<Product>> productsInCart = new HashMap<>();
 
+    //Register form
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    @Transactional
     //99% finished
     public void registerUser(@RequestBody User u, HttpServletResponse response) throws Exception {
 
@@ -46,9 +43,9 @@ public class UserController extends BaseController {
 
                     new Thread(() -> {
                         try {
-                            MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", MailUtil.CONFIRM_MESSAGE);
+                            MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", MailUtil.CONFIRM_MESSAGE + u.getUserId());
                         } catch (MessagingException e) {
-                            //TODO Deal with email not sending AND make in Transaction
+                            //TODO Deal with email not sending AND make the method in transaction
                         }
                     }).start();
                 } else {
@@ -56,6 +53,29 @@ public class UserController extends BaseController {
                 }
         }
         response.getWriter().append("You have been registered successfully, please verify your account by entering your email address.");
+    }
+
+    //Verifying user after registration
+    @RequestMapping(value = "/users/verify/{userId}")
+    public void verifyUser(@PathVariable("userId") long userId, HttpServletResponse response) throws Exception{
+
+        if (userRepository.existsById(userId)) {
+
+            User user = userRepository.findByUserId(userId);
+            if (user.getVerified() == 0) {
+                user.setVerified(1);
+                userRepository.save(user);
+                response.getWriter().append("You have successfully verified your account! \nRedirecting to the login page in 5 seconds...");
+                //TODO Redirect to log-in page in 5 seconds
+
+            }
+            else {
+                throw new UserAlreadyVerifiedException();
+            }
+        }
+        else {
+            throw new UserNotFoundExeption();
+        }
     }
 
     //Shows all users
@@ -72,7 +92,7 @@ public class UserController extends BaseController {
         }
 
     //Shows user by ID
-    @RequestMapping (value = "/users/{userId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/users/{userId}", method = RequestMethod.GET)
         public User showUserById(@PathVariable("userId") long userId, HttpSession session) throws UsersNotAvailableException{
             //TODO Validate ADMIN ONLY
 
@@ -88,7 +108,8 @@ public class UserController extends BaseController {
     //Login user
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public User logIn(@RequestBody User u, HttpSession session) throws TechnoMarketException {
-        //90% finished
+
+
         if (userValidator.validateLoginFields(u)) {
 
             String crypted = userDao.findHashedPassword(u.getEmail());
@@ -97,6 +118,10 @@ public class UserController extends BaseController {
 
                 if (userRepository.findByEmailAndPassword(u.getEmail(), crypted) != null) {
                     User user = userRepository.findByEmailAndPassword(u.getEmail(), crypted);
+                    if (user.getVerified() == 0) {
+                        throw new UserNotActiveException();
+                    }
+                    session.setAttribute("userId", user.getUserId());
                     session.setAttribute("userLogged", user);
                     return user;
                 }
@@ -107,6 +132,7 @@ public class UserController extends BaseController {
         throw new UserNotFoundExeption();
     }
 
+    //Logout User
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public void logOut (Exception e, HttpSession session, HttpServletResponse response) throws Exception {
         validateLogin(session, e);
@@ -121,14 +147,21 @@ public class UserController extends BaseController {
         }
     }
 
+    //Forgotten password
     @RequestMapping(value = "/login/forgottenPassword/{email}", method = RequestMethod.GET)
-    public void forgottenPassword(@PathVariable("email") String email, HttpServletResponse response) throws MessagingException, IOException {
+    public void forgottenPassword(@PathVariable("email") String email, HttpServletResponse response) throws Exception {
 
-        MailUtil.sendMail(serverEmailAddress, email, "Reset password", MailUtil.FORGOTEN_PASSWORD + userDao.getUserId(email));
-        response.getWriter().append("Email has been sent, please check your email.");
+        if (userRepository.findByEmail(email) != null) {
+            MailUtil.sendMail(serverEmailAddress, email, "Reset password", MailUtil.FORGOTTEN_PASSWORD + userDao.getUserId(email));
+            response.getWriter().append("Email has been sent, please check your email.");
+        }
+        else {
+            throw new UserNotFoundExeption();
+        }
 
     }
 
+    //Reset password with ID
     @RequestMapping(value = "/users/resetPassword/{userId}", method = RequestMethod.POST)
     public void resetForgottenPassword(@PathVariable("userId") long userId, @RequestBodyParam(name = "password") String password, HttpServletResponse response) throws Exception {
 
@@ -147,19 +180,12 @@ public class UserController extends BaseController {
                 }
             }).start();
             response.getWriter().append("Password reset successfully! \nRedirecting to login page...");
-            //TODO Waits 5 seconds then redirect to /login AND make the method in transaction
+            //TODO Waits 5 seconds then redirects to login AND make the method in transaction
         }
         else {
             throw new UserNotFoundExeption();
         }
     }
-
-
-    @RequestMapping(value = "products/addToFavorites", method = RequestMethod.POST)
-    public void addToFavorites(@PathVariable("userId") long userId, @PathVariable("productId") long productId) {
-        //TODO if logged - add to user favorites
-    }
-
 
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public void deleteUser(HttpSession session, HttpServletResponse response) throws IOException {

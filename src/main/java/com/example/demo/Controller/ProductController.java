@@ -68,7 +68,7 @@ public class ProductController extends BaseController{
             response.getWriter().append("Product with ID: " + productId + " has been deleted from the system.");
         }
         else {
-            throw new ProductDoesNotExistException();
+            throw new ProductDoesNotExistException("Sorry the product does not exists");
         }
     }
 

@@ -1,11 +1,13 @@
 package com.example.demo.Model.POJO;
 
 import com.example.demo.Model.Enums.Gender;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import javax.persistence.*;
-
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -35,6 +37,16 @@ public class User {
     private String imageUrl;
     @Column(name = "verified")
     private int verified = 0;
+    @JsonIgnore
+    @ManyToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
+    @JoinTable(name = "user_favorites",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private List<Product> favorites = new ArrayList<>();
 
 
 }

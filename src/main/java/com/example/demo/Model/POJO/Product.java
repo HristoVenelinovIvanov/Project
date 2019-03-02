@@ -10,7 +10,6 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Table(name = "products")
-
 public class Product {
 
     @Id

@@ -14,8 +14,21 @@ public class UserFavoritesDao {
 
         String sql = "INSERT INTO user_favorites (user_id, product_id) VALUES (?, ?)";
 
-        jdbcTemplate.update(sql, userId, productId);
-        return true;
+        return jdbcTemplate.update(sql, userId, productId) > 0;
+    }
+
+    public boolean removeFromFavorites(long userId, long productId) {
+
+        String sql = "DELETE FROM user_favorites WHERE user_id = ? AND product_id = ?";
+
+        return jdbcTemplate.update(sql, userId, productId) > 0;
+    }
+
+    public boolean checkIfLiked(long userId, long productId) {
+
+        String sql = "SELECT COUNT(*) FROM user_favorites WHERE user_id = ? AND product_id = ?";
+
+        return jdbcTemplate.queryForObject(sql, new Object[] {userId, productId}, int.class) > 0;
     }
 
 }

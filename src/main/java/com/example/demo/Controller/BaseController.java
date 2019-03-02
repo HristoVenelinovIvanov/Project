@@ -42,12 +42,13 @@ public abstract class BaseController {
         return new ErrorMsg(e.getMessage(), HttpStatus.REQUEST_TIMEOUT.value(), LocalDateTime.now());
     }
 
-    protected void validateLogin(HttpSession session, Exception e) throws NotLoggedException{
+    protected boolean validateLogin(HttpSession session) throws NotLoggedException{
         if(session.getAttribute("userLogged") == null ||
                 session.getAttribute("userLogged").equals(false) ||
                 session.isNew()){
-            throw new NotLoggedException(e.getMessage());
+            throw new NotLoggedException("You are not logged in!");
         }
+        return true;
     }
 
 

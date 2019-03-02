@@ -1,4 +1,4 @@
-package com.example.demo.Model.Validators;
+package com.example.demo.Model.Utility.Validators;
 
 import com.example.demo.Model.POJO.User;
 import com.example.demo.Model.Repository.UserRepository;

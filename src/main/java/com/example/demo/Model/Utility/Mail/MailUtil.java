@@ -1,4 +1,4 @@
-package com.example.demo.Model.Utility;
+package com.example.demo.Model.Utility.Mail;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -8,9 +8,9 @@ import java.util.Properties;
 
 public abstract class MailUtil {
 
-    public static final String FORGOTEN_PASSWORD = "Please click the link below to reset your password. \n http://localhost:1337/resetpassword/";
-    public static final String PASSWORD_RESET = "Hello, you have just successfully reset your password! \n if that is not you, please contact us at theddy1337@icloud.com or hvivanov@abv.bg";
-    public static final String CONFIRM_MESSAGE = "Hello, please do a backflip to verify your account!";
+    public static final String FORGOTEN_PASSWORD = "Hello, \nPlease click the link below to reset your password. \n http://localhost:1337/resetpassword/";
+    public static final String PASSWORD_RESET = "Hello, \nyou have successfully reset your password! \n if that is not you, please contact us at theddy1337@icloud.com or hvivanov@abv.bg";
+    public static final String CONFIRM_MESSAGE = "Hello, \nplease do a backflip to verify your account!";
 
     public static void sendMail(String from, String to, String subject, String content) throws MessagingException {
         Properties props = new Properties();
@@ -19,11 +19,12 @@ public abstract class MailUtil {
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", "587");
 
-        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+        Session session = Session.getInstance(props, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication("technomarket.project@gmail.com", "Technomarket123");
             }
         });
+
 
         Message msg = new MimeMessage(session);
         msg.setFrom(new InternetAddress(from, true));

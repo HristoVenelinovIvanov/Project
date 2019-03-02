@@ -8,9 +8,8 @@ import com.example.demo.Model.Repository.UserRepository;
 import com.example.demo.Model.POJO.User;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserNotFoundExeption;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.UsersNotAvailableException;
-import com.example.demo.Model.Utility.MailUtil;
-import com.example.demo.Model.Validators.UserValidator;
-import com.github.lambdaexpression.annotation.EnableRequestBodyParam;
+import com.example.demo.Model.Utility.Mail.MailUtil;
+import com.example.demo.Model.Utility.Validators.UserValidator;
 import com.github.lambdaexpression.annotation.RequestBodyParam;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +17,11 @@ import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
 
 @RestController
-@EnableRequestBodyParam
 public class UserController extends BaseController {
 
     @Autowired
@@ -32,45 +31,45 @@ public class UserController extends BaseController {
     @Autowired
     protected UserDao userDao;
 
+
     Map<Integer, Enumeration<Product>> productsInCart = new HashMap<>();
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
+    @Transactional
     //99% finished
     public void registerUser(@RequestBody User u, HttpServletResponse response) throws Exception {
 
         if (userValidator.validateEmptyFields(u)) {
-            if (userRepository.findByEmail(u.getEmail()) == null) {
+                if (userRepository.findByEmail(u.getEmail()) == null) {
+                    u.setPassword(BCrypt.hashpw(u.getPassword(), BCrypt.gensalt()));
+                    userRepository.save(u);
 
-                u.setPassword(BCrypt.hashpw(u.getPassword(), BCrypt.gensalt()));
-                userRepository.save(u);
-
-                new Thread( () -> {
-                    try {
-                        MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", MailUtil.CONFIRM_MESSAGE);
-                    } catch (MessagingException e) {
-                        //TODO Deal with email not sending
-                    }
-                }).start();
-            }
-            else {
-                throw new UserAlreadyExistsException();
-            }
+                    new Thread(() -> {
+                        try {
+                            MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", MailUtil.CONFIRM_MESSAGE);
+                        } catch (MessagingException e) {
+                            //TODO Deal with email not sending AND make in Transaction
+                        }
+                    }).start();
+                } else {
+                    throw new UserAlreadyExistsException();
+                }
         }
         response.getWriter().append("You have been registered successfully, please verify your account by entering your email address.");
     }
 
     //Shows all users
     @RequestMapping (value = "/users", method = RequestMethod.GET)
-    public List<User> showAllUsers() throws UsersNotAvailableException{
-            //TODO Validate ADMIN ONLY
+    public List<User> showAllUsers() throws UsersNotAvailableException {
+        //TODO Validate ADMIN ONLY
 
-            List<User> users = userRepository.findAll();
-
+        List<User> users = userRepository.findAll();
+            //validate user
             if (users.size() == 0) {
                 throw new UsersNotAvailableException();
             }
-        return users;
-    }
+            return users;
+        }
 
     //Shows user by ID
     @RequestMapping (value = "/users/{userId}", method = RequestMethod.GET)
@@ -138,9 +137,17 @@ public class UserController extends BaseController {
         if (user != null) {
             user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
             userRepository.save(user);
-            MailUtil.sendMail(serverEmailAddress, user.getEmail(), "Password reset", MailUtil.PASSWORD_RESET);
+
+            new Thread( () -> {
+                try {
+                    MailUtil.sendMail(serverEmailAddress, user.getEmail(), "Password reset", MailUtil.PASSWORD_RESET);
+                }
+                catch (MessagingException e) {
+                    //TODO Deal with email not sending
+                }
+            }).start();
             response.getWriter().append("Password reset successfully! \nRedirecting to login page...");
-            //TODO Waits 5 seconds then redirect to /login
+            //TODO Waits 5 seconds then redirect to /login AND make the method in transaction
         }
         else {
             throw new UserNotFoundExeption();

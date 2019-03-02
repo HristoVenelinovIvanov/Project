@@ -1,8 +1,10 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.POJO.ErrorMsg;
+import com.example.demo.Model.Utility.Exceptions.ProductExceptions.ProductDoesNotExistException;
 import com.example.demo.Model.Utility.Exceptions.TechnoMarketException;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.NotLoggedException;
+import com.github.lambdaexpression.annotation.EnableRequestBodyParam;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.springframework.http.HttpStatus;
@@ -14,10 +16,11 @@ import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
 @RestController
+@EnableRequestBodyParam
 public abstract class BaseController {
 
     static Logger log = Logger.getLogger(BaseController.class.getName());
-    protected static final String serverEmailAddress = "technomarket.project@gmail.com";
+    static final String serverEmailAddress = "technomarket.project@gmail.com";
 
 
     @ExceptionHandler({TechnoMarketException.class})

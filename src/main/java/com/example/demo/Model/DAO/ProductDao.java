@@ -15,9 +15,14 @@ public class ProductDao {
 
     public String addProduct(Product product){
         String sql = "INSERT INTO products (product_name, price, quantity, category_id, a_category_id, characteristics) VALUES (?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, product.getProductName(), product.getPrice(), product.getQuantity(), product.getCategoryId(), product.getACategoryId(), product.getCharacteristics());
         return "Product added to category: " + product.getCategoryId() + " with ID: " + jdbcTemplate.queryForObject(sql, (resultSet, i) -> product.getProductId());
     }
 
+    public boolean productExists(long productId) {
+
+        String sql = "SELECT COUNT(*) FROM products WHERE product_id = ?";
+
+        return jdbcTemplate.queryForObject(sql, new Object[] {productId}, long.class) > 0;
+    }
 
 }

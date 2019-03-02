@@ -29,7 +29,7 @@ public class UserController extends BaseController {
     protected UserDao userDao;
 
 
-    Map<Integer, Enumeration<Product>> productsInCart = new HashMap<>();
+//    Map<Integer, Enumeration<Product>> productsInCart = new HashMap<>();
 
     //Register form
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -56,7 +56,7 @@ public class UserController extends BaseController {
     }
 
     //Verifying user after registration
-    @RequestMapping(value = "/users/verify/{userId}")
+    @RequestMapping(value = "/users/verify/{userId}", method = RequestMethod.GET)
     public void verifyUser(@PathVariable("userId") long userId, HttpServletResponse response) throws Exception{
 
         if (userRepository.existsById(userId)) {
@@ -66,8 +66,8 @@ public class UserController extends BaseController {
                 user.setVerified(1);
                 userRepository.save(user);
                 response.getWriter().append("You have successfully verified your account! \nRedirecting to the login page in 5 seconds...");
-                //TODO Redirect to log-in page in 5 seconds
-
+                response.setHeader("Refresh", "5; URL=http://localhost:1337/login");
+                //redirect to user; should be made by frontend-er to redirect to proper view
             }
             else {
                 throw new UserAlreadyVerifiedException();
@@ -77,6 +77,19 @@ public class UserController extends BaseController {
             throw new UserNotFoundExeption();
         }
     }
+
+    //try to start Thread to make redirect after 5 sec
+//    public void showMessage(HttpServletResponse response){
+//        Thread message = new Thread(() -> {
+//            try {
+//                response.getWriter().append("You have successfully verified your account! \nRedirecting to the login page in 5 seconds...");
+//            } catch (IOException e) {
+//                System.out.println("lls" + e.getMessage());
+//            }
+//        });
+//        message.setDaemon(true);
+//        message.start();
+//    }
 
     //Shows all users
     @RequestMapping (value = "/users", method = RequestMethod.GET)

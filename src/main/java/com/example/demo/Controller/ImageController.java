@@ -5,7 +5,6 @@ import com.example.demo.Model.POJO.User;
 import com.example.demo.Model.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,7 +18,11 @@ public class ImageController {
     @Autowired
     UserRepository userRepository;
 
-    public static final String IMAGE_DIR = "C://Users/Prod/Desktop/";
+    public String getPath(){
+        String path = "C:" + File.separator + "Users" + File.separator +
+                "Prod" + File.separator + "Desktop" + File.separator + "images" + File.separator;
+        return path;
+    }
 
     @PostMapping("/images")
     public void uploadImage(@RequestBody ImageUploadDTO dto, HttpSession ses) throws IOException {
@@ -28,7 +31,7 @@ public class ImageController {
         System.out.println(base64);
         byte[] bytes = Base64.getDecoder().decode(base64);
         String name = user.getUserId() + System.currentTimeMillis()+".png";
-        File newImage = new File(IMAGE_DIR +name);
+        File newImage = new File(getPath() + name);
         FileOutputStream fos = new FileOutputStream(newImage);
         fos.write(bytes);
         user.setImageUrl(name);
@@ -36,8 +39,8 @@ public class ImageController {
     }
 
     @GetMapping(value="/images/{name}", produces = "image/png")
-    public byte[] downloadImage(@PathVariable("name") String imageName, HttpServletResponse resp) throws IOException {
-        File newImage = new File(IMAGE_DIR +imageName);
+    public byte[] downloadImage(@PathVariable("name") String imageName) throws IOException {
+        File newImage = new File(getPath() + imageName);
         byte[] bytesArray = new byte[(int) newImage.length()];
         FileInputStream fis = new FileInputStream(newImage);
         fis.read(bytesArray); //read file into bytes[]

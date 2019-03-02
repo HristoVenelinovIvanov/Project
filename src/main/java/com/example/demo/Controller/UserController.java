@@ -147,17 +147,18 @@ public class UserController extends BaseController {
 
     //Logout User
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public void logOut (Exception e, HttpSession session, HttpServletResponse response) throws Exception {
-        validateLogin(session, e);
-        if (session != null) {
-            //A little bit overkill?
-            session = null;
-            session.invalidate();
-            response.sendRedirect("/login");
+    public void logOut (HttpSession session, HttpServletResponse response) throws Exception {
+        if (validateLogin(session)) {
+            if (session != null) {
+                //A little bit overkill?
+                session = null;
+                session.invalidate();
+                response.sendRedirect("/login");
+            } else {
+                response.sendRedirect("/login");
+            }
         }
-        else {
-            response.sendRedirect("/login");
-        }
+        throw new NotLoggedException("Your session has expired, log in and try again");
     }
 
     //Forgotten password

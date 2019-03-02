@@ -5,7 +5,7 @@ import com.example.demo.Model.Utility.Exceptions.TechnoMarketException;
 public class ProductDoesNotExistException extends TechnoMarketException {
 
 
-    public ProductDoesNotExistException() {
+    public ProductDoesNotExistException(String msg) {
         super("No product available, sorry.");
     }
 }

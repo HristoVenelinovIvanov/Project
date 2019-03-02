@@ -5,7 +5,11 @@ import com.example.demo.Model.POJO.User;
 import com.example.demo.Model.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+<<<<<<< HEAD
 
+=======
+import javax.servlet.http.HttpServletResponse;
+>>>>>>> 242c87e2aa87ce4961e78106f9ad8474a0ccd88b
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;

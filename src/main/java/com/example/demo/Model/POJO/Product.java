@@ -28,17 +28,11 @@ public class Product {
     //E.G Ordered by a user OR marked DAMAGED/NOT FOR SALE
 
     @Column(name = "quantity_on_order")
-    private Long quantityOnOrder;
+    private long quantityOnOrder;
     @Column(name = "category_id")
-    private int categoryId;
-    @Column(name = "a_category_id")
-    private Integer aCategoryId;
-    @Column(name = "b_category_id")
-    private Integer bCategoryId;
-    @Column(name = "c_category_id")
-    private Integer cCategoryId;
+    private long categoryId;
     @Column(name = "discounted")
-    private Integer discounted;
+    private int discounted;
     @Column(name = "characteristics")
     private String characteristics;
     @Column(name = "product_image")

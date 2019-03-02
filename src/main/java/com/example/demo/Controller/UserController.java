@@ -1,19 +1,23 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Model.DAO.UserDao;
 import com.example.demo.Model.POJO.Product;
 import com.example.demo.Model.Utility.Exceptions.TechnoMarketException;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserAlreadyExistsException;
 import com.example.demo.Model.Repository.UserRepository;
 import com.example.demo.Model.POJO.User;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.UserNotFoundExeption;
-import com.example.demo.Model.Utility.MailUtil;
-import com.example.demo.Model.Validators.UserValidator;
+import com.example.demo.Model.Utility.Exceptions.UserExceptions.UsersNotAvailableException;
+import com.example.demo.Model.Utility.Mail.MailUtil;
+import com.example.demo.Model.Utility.Validators.UserValidator;
+import com.github.lambdaexpression.annotation.RequestBodyParam;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
 
@@ -22,58 +26,90 @@ public class UserController extends BaseController {
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private UserValidator userValidator;
+    @Autowired
+    protected UserDao userDao;
+
 
     Map<Integer, Enumeration<Product>> productsInCart = new HashMap<>();
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
+    @Transactional
     //99% finished
-    public void registerUser(@RequestBody User user, HttpServletResponse response) throws Exception {
-        if (userValidator.validateEmptyFields(user)) {
-            if (userRepository.findByEmail(user.getEmail()) == null) {
-                userRepository.save(user);
-                new Thread( () -> {
-                    try {
-                        MailUtil.sendMail("technomarket.project@gmail.com", user.getEmail(), "Account verification", "Please blink 5 times to verify your account");
-                    } catch (MessagingException e) {
-                        //TODO Deal with email not sending
-                    }
-                }).start();
-            }
-            else {
-                throw new UserAlreadyExistsException();
-            }
+    public void registerUser(@RequestBody User u, HttpServletResponse response) throws Exception {
+
+        if (userValidator.validateEmptyFields(u)) {
+                if (userRepository.findByEmail(u.getEmail()) == null) {
+                    u.setPassword(BCrypt.hashpw(u.getPassword(), BCrypt.gensalt()));
+                    userRepository.save(u);
+
+                    new Thread(() -> {
+                        try {
+                            MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", MailUtil.CONFIRM_MESSAGE);
+                        } catch (MessagingException e) {
+                            //TODO Deal with email not sending AND make in Transaction
+                        }
+                    }).start();
+                } else {
+                    throw new UserAlreadyExistsException();
+                }
         }
         response.getWriter().append("You have been registered successfully, please verify your account by entering your email address.");
     }
 
-    //show user by id
+    //Shows all users
+    @RequestMapping (value = "/users", method = RequestMethod.GET)
+    public List<User> showAllUsers() throws UsersNotAvailableException {
+        //TODO Validate ADMIN ONLY
+
+        List<User> users = userRepository.findAll();
+            //validate user
+            if (users.size() == 0) {
+                throw new UsersNotAvailableException();
+            }
+            return users;
+        }
+
+    //Shows user by ID
     @RequestMapping (value = "/users/{userId}", method = RequestMethod.GET)
-        public User showAllUsers(@PathVariable("userId") long userId, HttpSession session){
+        public User showUserById(@PathVariable("userId") long userId, HttpSession session) throws UsersNotAvailableException{
+            //TODO Validate ADMIN ONLY
+
             User user = userRepository.findByUserId(userId);
-            session.setAttribute("userId", user);
-            return user;
+
+            if (user != null) {
+                session.setAttribute("userId", user);
+                return user;
+            }
+            throw new UsersNotAvailableException();
     }
 
-    //login user
+    //Login user
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public User logIn(@RequestBody User user, HttpSession session) throws TechnoMarketException {
-        User u = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
-        //NOT FINISHED
-        if (new UserValidator().validateLoginFields(user)) {
-            if (u != null) {
-                session.setAttribute("userLogged", u);
-                return u;
+    public User logIn(@RequestBody User u, HttpSession session) throws TechnoMarketException {
+        //90% finished
+        if (userValidator.validateLoginFields(u)) {
+
+            String crypted = userDao.findHashedPassword(u.getEmail());
+
+            if (BCrypt.checkpw(u.getPassword(), crypted)) {
+
+                if (userRepository.findByEmailAndPassword(u.getEmail(), crypted) != null) {
+                    User user = userRepository.findByEmailAndPassword(u.getEmail(), crypted);
+                    session.setAttribute("userLogged", user);
+                    return user;
+                }
+                throw new UserNotFoundExeption();
             }
             throw new UserNotFoundExeption();
         }
         throw new UserNotFoundExeption();
     }
 
-    @RequestMapping(value = "/logout", method = RequestMethod.POST)
-    public void logOut (HttpSession session, HttpServletResponse response) throws IOException {
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    public void logOut (Exception e, HttpSession session, HttpServletResponse response) throws Exception {
+        validateLogin(session, e);
         if (session != null) {
             //A little bit overkill?
             session = null;
@@ -82,6 +118,39 @@ public class UserController extends BaseController {
         }
         else {
             response.sendRedirect("/login");
+        }
+    }
+
+    @RequestMapping(value = "/login/forgottenPassword/{email}", method = RequestMethod.GET)
+    public void forgottenPassword(@PathVariable("email") String email, HttpServletResponse response) throws MessagingException, IOException {
+
+        MailUtil.sendMail(serverEmailAddress, email, "Reset password", MailUtil.FORGOTEN_PASSWORD + userDao.getUserId(email));
+        response.getWriter().append("Email has been sent, please check your email.");
+
+    }
+
+    @RequestMapping(value = "/users/resetPassword/{userId}", method = RequestMethod.POST)
+    public void resetForgottenPassword(@PathVariable("userId") long userId, @RequestBodyParam(name = "password") String password, HttpServletResponse response) throws Exception {
+
+        User user = userRepository.findByUserId(userId);
+
+        if (user != null) {
+            user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
+            userRepository.save(user);
+
+            new Thread( () -> {
+                try {
+                    MailUtil.sendMail(serverEmailAddress, user.getEmail(), "Password reset", MailUtil.PASSWORD_RESET);
+                }
+                catch (MessagingException e) {
+                    //TODO Deal with email not sending
+                }
+            }).start();
+            response.getWriter().append("Password reset successfully! \nRedirecting to login page...");
+            //TODO Waits 5 seconds then redirect to /login AND make the method in transaction
+        }
+        else {
+            throw new UserNotFoundExeption();
         }
     }
 
@@ -101,19 +170,5 @@ public class UserController extends BaseController {
     public void editUser(HttpSession session, HttpServletResponse response) throws IOException {
         //TODO if logged - edit user profile
     }
-
-
-
-    // the isLoged is implemented in BaseControler as validateLogin
-
-//    public static boolean isLoged(HttpServletRequest req){
-//        HttpSession session = req.getSession();
-//        if (session.isNew() || session.getAttribute("logged") == null ||
-//                session.getAttribute("logged").equals(false)){
-//            return false;
-//        }
-//        return true;
-//    }
-
 
 }

@@ -7,6 +7,7 @@ import com.example.demo.Model.Utility.Exceptions.UserExceptions.*;
 import com.example.demo.Model.Repository.UserRepository;
 import com.example.demo.Model.POJO.User;
 import com.example.demo.Model.Utility.Exceptions.ValidationExceptions.EmailDoesNotSendSucceffullyExeption;
+import com.example.demo.Model.Utility.Exceptions.ValidationExceptions.InvalidCredentinalsException;
 import com.example.demo.Model.Utility.Mail.MailUtil;
 import com.example.demo.Model.Utility.Validators.UserValidator;
 import com.github.lambdaexpression.annotation.RequestBodyParam;
@@ -232,8 +233,21 @@ public class UserController extends BaseController {
     }
 
     @RequestMapping(value = "/edit", method = RequestMethod.POST)
-    public void editUser(HttpSession session, HttpServletResponse response) throws IOException {
-        //TODO if logged - edit user profile
+    public void editUser(@RequestBody User u, HttpSession session, HttpServletResponse response) throws TechnoMarketException {
+
+        User user = (User) session.getAttribute("userLogged");
+        
+        if (user != null) {
+            if (userValidator.validateLoginFields(u)) {
+                userRepository.saveAndFlush(u);
+            }
+            else {
+                throw new InvalidCredentinalsException("Fields are not filled properly!");
+            }
+        }
+        else{
+            throw new UserNotFoundExeption();
+        }
     }
 
 }

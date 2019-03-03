@@ -13,6 +13,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
+import javax.mail.Session;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -93,16 +94,20 @@ public class UserController extends BaseController {
 
     //Shows all users
     @RequestMapping (value = "/users", method = RequestMethod.GET)
-    public List<User> showAllUsers() throws UsersNotAvailableException {
-        //TODO Validate ADMIN ONLY
-
-        List<User> users = userRepository.findAll();
-            //validate user
+    public List<User> showAllUsers(HttpSession session) throws TechnoMarketException {
+        User user = (User) session.getAttribute("userLogged");
+        System.out.println(user);
+        //validate user
+        if (user != null && userRepository.existsById(user.getUserId()) &&
+                user.getUserRoleId() == 1) {
+            List<User> users = userRepository.findAll();
             if (users.size() == 0) {
                 throw new UsersNotAvailableException();
             }
             return users;
         }
+        throw new NotAdminException("You don't have Addmin permissions");
+    }
 
     //Shows user by ID
     @RequestMapping(value = "/users/{userId}", method = RequestMethod.GET)

@@ -100,29 +100,43 @@ public class UserController extends BaseController {
         User user = (User) session.getAttribute("userLogged");
         System.out.println(user);
         //validate user
-        if (user != null && userRepository.existsById(user.getUserId()) &&
-                user.getUserRoleId() == 1) {
-            List<User> users = userRepository.findAll();
-            if (users.size() == 0) {
-                throw new UsersNotAvailableException();
+        if (user != null){
+            if (userRepository.existsById(user.getUserId())) {
+                if (user.getUserRoleId() == 1) {
+                    List<User> users = userRepository.findAll();
+                    if (users.size() == 0) {
+                        throw new UsersNotAvailableException();
+                    }
+                    return users;
+                }
+                throw new NotAdminException("You are not allowed to do this operation!");
             }
-            return users;
+            throw new UserNotFoundExeption();
         }
-        throw new NotAdminException("You don't have Addmin permissions");
+        throw new NotLoggedException("You have to login");
     }
 
     //Shows user by ID
     @RequestMapping(value = "/users/{userId}", method = RequestMethod.GET)
-        public User showUserById(@PathVariable("userId") long userId, HttpSession session) throws UsersNotAvailableException{
-            //TODO Validate ADMIN ONLY
+        public User showUserById(@PathVariable("userId") long userId, HttpSession session) throws TechnoMarketException {
 
-            User user = userRepository.findByUserId(userId);
+        User admin = (User) session.getAttribute("userLoged");
 
-            if (user != null) {
-                session.setAttribute("userId", user);
-                return user;
+        User user = userRepository.findByUserId(userId);
+
+        if (admin != null) {
+            if (userRepository.existsById(admin.getUserId())) {
+                if (admin.getUserRoleId() == 1) {
+                    if (userRepository.findByUserId(userId) != null) {
+                        return user;
+                    }
+                    throw new UserNotFoundExeption();
+                }
+                throw new NotAdminException("You are not allowed to do this operation!");
             }
-            throw new UsersNotAvailableException();
+            throw new UserNotFoundExeption();
+        }
+        throw new NotLoggedException("You have to login");
     }
 
     //Login user
@@ -236,7 +250,7 @@ public class UserController extends BaseController {
     public void editUser(@RequestBody User u, HttpSession session, HttpServletResponse response) throws TechnoMarketException {
 
         User user = (User) session.getAttribute("userLogged");
-        
+
         if (user != null) {
             if (userValidator.validateLoginFields(u)) {
                 userRepository.saveAndFlush(u);

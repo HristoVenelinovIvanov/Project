@@ -18,6 +18,7 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
 
@@ -30,9 +31,6 @@ public class UserController extends BaseController {
     private UserValidator userValidator;
     @Autowired
     protected UserDao userDao;
-
-
-//    Map<Integer, Enumeration<Product>> productsInCart = new HashMap<>();
 
     //Register form
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -196,6 +194,8 @@ public class UserController extends BaseController {
     }
 
     //Reset password with ID
+    //with transaction
+    @Transactional
     @RequestMapping(value = "/users/resetPassword/{userId}", method = RequestMethod.POST)
     public void resetForgottenPassword(@PathVariable("userId") long userId, @RequestBodyParam(name = "password") String password, HttpServletResponse response) throws Exception {
 
@@ -208,7 +208,7 @@ public class UserController extends BaseController {
             new Thread( () -> {
                 try {
                     MailUtil.sendMail(serverEmailAddress, user.getEmail(), "Password reset", MailUtil.PASSWORD_RESET);
-                    //only message that is successfully sended
+                    //only if successfully sended
                     response.getWriter().append("E-mail send successfully, check your e-mail");
                 }
                 catch (Exception e) {
@@ -218,7 +218,6 @@ public class UserController extends BaseController {
             response.getWriter().append("Password reset successfully! \nRedirecting to login page after 5 seconds...");
             //redirecting after 5 seconds
             response.setHeader("Refresh", "5; URL=http://localhost:1337/login");
-            //TODO Make the method in transaction
         }
         else {
             throw new UserNotFoundExeption();

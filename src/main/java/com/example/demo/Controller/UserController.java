@@ -6,6 +6,7 @@ import com.example.demo.Model.Utility.Exceptions.TechnoMarketException;
 import com.example.demo.Model.Utility.Exceptions.UserExceptions.*;
 import com.example.demo.Model.Repository.UserRepository;
 import com.example.demo.Model.POJO.User;
+import com.example.demo.Model.Utility.Exceptions.ValidationExceptions.EmailDoesNotSendSucceffullyExeption;
 import com.example.demo.Model.Utility.Mail.MailUtil;
 import com.example.demo.Model.Utility.Validators.UserValidator;
 import com.github.lambdaexpression.annotation.RequestBodyParam;
@@ -155,8 +156,7 @@ public class UserController extends BaseController {
     public void logOut (HttpSession session, HttpServletResponse response) throws Exception {
         if (validateLogin(session)) {
             if (session != null) {
-                //A little bit overkill?
-                session = null;
+                //Killing session
                 session.invalidate();
                 response.sendRedirect("/login");
             } else {
@@ -193,22 +193,42 @@ public class UserController extends BaseController {
             new Thread( () -> {
                 try {
                     MailUtil.sendMail(serverEmailAddress, user.getEmail(), "Password reset", MailUtil.PASSWORD_RESET);
+                    //only message that is successfully sended
+                    response.getWriter().append("E-mail send successfully, check your e-mail");
                 }
-                catch (MessagingException e) {
-                    //TODO Deal with email not sending
+                catch (Exception e) {
+                    System.out.println("OOps, something goes wrong " + e.getMessage());
                 }
             }).start();
-            response.getWriter().append("Password reset successfully! \nRedirecting to login page...");
-            //TODO Waits 5 seconds then redirects to login AND make the method in transaction
+            response.getWriter().append("Password reset successfully! \nRedirecting to login page after 5 seconds...");
+            //redirecting after 5 seconds
+            response.setHeader("Refresh", "5; URL=http://localhost:1337/login");
+            //TODO Make the method in transaction
         }
         else {
             throw new UserNotFoundExeption();
         }
     }
 
-    @RequestMapping(value = "/delete", method = RequestMethod.POST)
-    public void deleteUser(HttpSession session, HttpServletResponse response) throws IOException {
-        //TODO if Admin - delete user
+    @RequestMapping(value = "/delete/{userId}", method = RequestMethod.POST)
+    public void deleteUser(@PathVariable("userId") long userId, HttpSession session, HttpServletResponse response) throws Exception {
+
+        User user = (User) session.getAttribute("userLogged");
+        if (user != null) {
+            if (userRepository.existsById(user.getUserId())) {
+                if (user.getUserRoleId() == 1) {
+                    userRepository.delete(userRepository.findByUserId(userId));
+                    response.getWriter().append("User deleted successfully!");
+                } else {
+                    throw new NotAdminException("User not Admin!");
+                }
+            } else {
+                throw new UserNotFoundExeption();
+            }
+        }
+        else {
+            throw new NotLoggedException("You are not logged!");
+        }
     }
 
     @RequestMapping(value = "/edit", method = RequestMethod.POST)

@@ -44,7 +44,8 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
     private List<Product> favorites = new ArrayList<>();
-
+    @Column(name = "subscribed")
+    private int subscribe;
 
 }
 

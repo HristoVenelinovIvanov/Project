@@ -1,8 +1,5 @@
-package com.example.demo.Model.Enums;
+package com.example.demo.model.enums;
 
-import org.springframework.stereotype.Component;
-
-@Component
 public enum Notification {
 
     DISCOUNT {

@@ -2,6 +2,8 @@
 HELP.md
 /target/
 !.mvn/wrapper/maven-wrapper.jar
+.properties
+*.2019
 
 ### STS ###
 .apt_generated
@@ -17,7 +19,6 @@ HELP.md
 *.iws
 *.iml
 *.ipr
-application.properties
 
 ### NetBeans ###
 /nbproject/private/

@@ -20,11 +20,8 @@ public class OrderDetails {
     private long orderId;
     @Column(name = "user_id")
     private long userId;
-    @JoinTable(name = "user_addresses",
-            joinColumns = @JoinColumn(name = "user_details_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private UserAddress userAddress;
+    @Column(name = "address")
+    private String userAddress;
     @Column(name = "product_id")
     private long productId;
     @Column(name = "product_quantity")

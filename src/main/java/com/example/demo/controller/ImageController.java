@@ -3,8 +3,12 @@ package com.example.demo.controller;
 import com.example.demo.model.dto.ImageUploadDTO;
 import com.example.demo.model.pojo.User;
 import com.example.demo.model.repository.UserRepository;
+import com.example.demo.utility.exceptions.TechnoMarketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.mail.Multipart;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,17 +29,19 @@ public class ImageController extends BaseController{
     }
 
     @PostMapping("/images")
-    public void uploadImage(@RequestBody ImageUploadDTO dto, HttpSession ses) throws IOException {
-        User user = (User) ses.getAttribute("loggedUser");
-        String base64 = dto.getFileStr();
-        System.out.println(base64);
-        byte[] bytes = Base64.getDecoder().decode(base64);
+    public void uploadImage(@RequestParam MultipartFile img, HttpSession ses) throws IOException, TechnoMarketException {
+
+        validateAdminLogin(ses);
+        User user = (User) ses.getAttribute("userLogged");
+        System.out.println(user);
+        byte[] bytes = img.getBytes();
         String name = user.getUserId() + System.currentTimeMillis()+".png";
         File newImage = new File(getPath() + name);
         FileOutputStream fos = new FileOutputStream(newImage);
         fos.write(bytes);
+        fos.close();
         user.setImageUrl(name);
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
     }
 
     @GetMapping(value="/images/{name}", produces = "image/png")

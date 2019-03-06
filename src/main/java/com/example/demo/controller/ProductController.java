@@ -7,6 +7,7 @@ import com.example.demo.model.repository.ProductRepository;
 import com.example.demo.utility.exceptions.ProductExceptions.ProductDoesNotExistException;
 import com.example.demo.utility.exceptions.TechnoMarketException;
 import com.example.demo.utility.validators.ProductValidator;
+import com.mysql.cj.protocol.Resultset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -94,4 +96,9 @@ public class ProductController extends BaseController{
         throw new ProductDoesNotExistException("The product you are trying to edit does not exists!");
     }
 
+    @RequestMapping(value = "/products/find/{inches}", method = RequestMethod.GET)
+    public ResultSet getProductByInches(@PathVariable(name = "inches") long inches) throws Exception{
+
+        return productDao.getAllFilteredProducts(inches);
+    }
 }

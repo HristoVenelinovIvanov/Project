@@ -1,6 +1,6 @@
 //package com.example.demo.utility.ordermessages;
 //
-//import com.example.demo.model.pojo.OrderDetails;
+//import com.example.demo.model.pojo.Order;
 //import com.example.demo.model.pojo.User;
 //import com.example.demo.model.pojo.UserAddress;
 //
@@ -10,7 +10,7 @@
 //public abstract class OrderMessage {
 //
 //
-//    public static String orderMessage(OrderDetails orderDetails, User user, UserAddress userAddress) {
+//    public static String orderMessage(Order orderDetails, User user, UserAddress userAddress) {
 //
 //        return "Your order number is #" + orderDetails.getOrderId()
 //                + "\nYou'll receive an email confirmation shorty to "

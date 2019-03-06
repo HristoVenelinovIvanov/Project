@@ -36,6 +36,8 @@ public class Product {
     private String characteristics;
     @Column(name = "product_image")
     private String productImage;
+    @Column(name = "inches")
+    private long inches;
 
 
 }

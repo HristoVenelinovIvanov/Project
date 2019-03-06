@@ -3,9 +3,7 @@ package com.example.demo.utility.validators;
 import com.example.demo.model.pojo.User;
 import com.example.demo.model.repository.UserRepository;
 import com.example.demo.utility.exceptions.TechnoMarketException;
-import com.example.demo.utility.exceptions.UserExceptions.NotAdminException;
-import com.example.demo.utility.exceptions.UserExceptions.UserNotFoundExeption;
-import com.example.demo.utility.exceptions.UserExceptions.UsersNotAvailableException;
+import com.example.demo.utility.exceptions.UserExceptions.UserNotFoundException;
 import com.example.demo.utility.exceptions.ValidationExceptions.EmailNotValidException;
 import com.example.demo.utility.exceptions.ValidationExceptions.InvalidCredentinalsException;
 import com.example.demo.utility.exceptions.ValidationExceptions.PasswordTooShortException;
@@ -18,21 +16,19 @@ public class UserValidator {
     @Autowired
     private UserRepository userRepository;
 
-    private static final int USER_ROLE_ADMINISTRATOR = 1;
-
     public boolean validateEmptyFields(User user) throws TechnoMarketException {
 
         if (user == null) {
             throw new InvalidCredentinalsException("Invalid credentials");
         }
-        if (user.getFirstName().isEmpty() || user.getFirstName() == null) {
+        if (user.getFirstName().isEmpty() || user.getFirstName() == null || user.getFirstName().contains(" ")) {
             throw new InvalidCredentinalsException("First name field must not be empty!");
         }
-        if (user.getLastName().isEmpty() || user.getLastName() == null) {
+        if (user.getLastName().isEmpty() || user.getLastName() == null || user.getLastName().contains(" ")) {
             throw new InvalidCredentinalsException("Last name field must not be empty!");
         }
         if (user.getPassword().isEmpty() || user.getPassword() == null ||
-                user.getPassword().length() < 5 || user.getPassword().contains(" ")) {
+                user.getPassword().length() < 6 || user.getPassword().contains(" ")) {
             throw new PasswordTooShortException();
         }
         if (isValidEmailAddress(user.getEmail())) {
@@ -43,7 +39,7 @@ public class UserValidator {
 
     private boolean isValidEmailAddress(String email) throws EmailNotValidException{
 
-        if (!(email == null && email.isEmpty())) {
+        if (!(email == null || email.isEmpty() || email.contains(" "))) {
                 return email.matches("^[a-zA-Z0-9_!#$%&’*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$");
         }
         throw new EmailNotValidException();
@@ -59,31 +55,15 @@ public class UserValidator {
                 return true;
             }
         }
-        throw new UserNotFoundExeption();
+        throw new UserNotFoundException();
     }
 
-    public boolean validateLoginFields(String email, String password) throws TechnoMarketException {
+    public boolean validatePassword(String password) throws TechnoMarketException {
 
-        password = password.trim();
-        if (isValidEmailAddress(email)) {
-            if (!(password.isEmpty() || password == null)) {
-                return true;
-            }
+        if (password.isEmpty() || password == null || password.length() < 6 || password.contains(" ")) {
+            throw new PasswordTooShortException();
         }
-        throw new UserNotFoundExeption();
+        return true;
     }
 
-    public boolean isAdmin(User user) throws TechnoMarketException {
-
-        if (user == null) {
-            if (validateEmptyFields(user)) {
-                if (user.getUserRoleId() == USER_ROLE_ADMINISTRATOR) {
-                    return true;
-                }
-                throw new NotAdminException("You are not admin!");
-            }
-            throw new UsersNotAvailableException();
-        }
-        throw new UserNotFoundExeption();
-    }
 }

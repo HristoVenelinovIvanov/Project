@@ -7,7 +7,6 @@ import com.example.demo.model.pojo.User;
 import com.example.demo.model.repository.UserRepository;
 import com.example.demo.utility.exceptions.ProductExceptions.ProductDoesNotExistException;
 import com.example.demo.utility.exceptions.UserExceptions.AlreadyFavoritedException;
-import com.example.demo.utility.exceptions.UserExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +30,6 @@ public class UserFavoritesController extends BaseController {
     //Adding a product to favorites
     @RequestMapping(value = "/products/favorites/add/{productId}", method = RequestMethod.GET)
     public void addToFavorites(@PathVariable("productId") long productId, HttpSession session, HttpServletResponse response) throws Exception {
-
 
         validateLogin(session);
 
@@ -58,36 +56,36 @@ public class UserFavoritesController extends BaseController {
         validateLogin(session);
         User user = userRepository.findByUserId((long) session.getAttribute("userId"));
 
-            if (user.getFavorites().size() == 0) {
-                throw new ProductDoesNotExistException("Your favorites are empty");
+            if (user.getFavorites().isEmpty()) {
+                throw new ProductDoesNotExistException("Your favorites are empty.");
             }
             return user.getFavorites();
 
     }
 
-    //Removing a product from favorites for the user that is logged
+    //Removing a product from favorites
     @RequestMapping(value = "/products/favorites/remove/{productId}", method = RequestMethod.GET)
-    public void removeFromFavorites(@PathVariable("productId") long productId, HttpSession session, HttpServletResponse response) throws Exception {
+    public String removeFromFavorites(@PathVariable("productId") long productId, HttpSession session) throws Exception {
 
-        if(validateLogin(session)) {
+        validateLogin(session);
+        User user = userRepository.findByUserId((long) session.getAttribute("userId"));
 
-            User user = userRepository.findByUserId((long) session.getAttribute("userId"));
-
-            if (user.getFavorites().size() == 0) {
-                throw new ProductDoesNotExistException("Your favorites are empty");
+        if(!userFavoritesDao.isFavorite(user.getUserId(), productId)) {
+            return "The product you are trying to remove is not in the favorite list!";
+        }
+        else {
+            if (user.getFavorites().isEmpty()) {
+                throw new ProductDoesNotExistException("Your favorites are empty.");
             }
             else {
                 if (productDao.productExists(productId)) {
                     userFavoritesDao.removeFromFavorites(user.getUserId(), productId);
-                    response.getWriter().append("Product ID: " + productId + " has been removed from your favorites");
+                    return "Product ID: " + productId + " has been removed from your favorites";
                 }
                 else {
                     throw new ProductDoesNotExistException("The product does not exist, sorry :(");
                 }
             }
-        }
-        else {
-            throw new NotLoggedException("Your session has expired, log in and try again");
         }
     }
 

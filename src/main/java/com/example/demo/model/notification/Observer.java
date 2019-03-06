@@ -1,40 +1,29 @@
 package com.example.demo.model.notification;
 
+import com.example.demo.controller.BaseController;
 import com.example.demo.model.pojo.User;
-import com.example.demo.model.repository.ProductRepository;
 import com.example.demo.model.repository.UserRepository;
 import com.example.demo.utility.exceptions.TechnoMarketException;
 import com.example.demo.utility.mail.MailUtil;
-import com.example.demo.utility.validators.UserValidator;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.model.enums.Notification;
-
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
-
 import static com.example.demo.model.enums.Notification.*;
 
-
 @RestController
-public class Observer {
+public class Observer extends BaseController {
 
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private UserValidator userValidator;
+
+    @RequestMapping(value = "/notify/{note}", method = RequestMethod.POST)
+    public void notify(@PathVariable Notification note, HttpSession session) throws TechnoMarketException {
 
 
-    static final String serverEmailAddress = "technomarket.project@gmail.com";
+        if (validateAdminLogin(session)) {
 
-    @RequestMapping(value = "/notify", method = RequestMethod.POST)
-    public void notify(@RequestBody Notification note, HttpSession session) throws TechnoMarketException {
-
-        User u = (User) session.getAttribute("userLogged");
-        if (userValidator.isAdmin(u)) {
             switch (note) {
                 case DISCOUNT:
                     eventNotify(DISCOUNT);
@@ -53,23 +42,22 @@ public class Observer {
     }
 
     public void eventNotify(Enum eText){
+
         new Thread(() -> {
-            for (User u : userRepository.findAllBySubscribe()){
-                try {
+            for (User u : userRepository.findAll()){
+                if (u.getSubscribed() == 1) {
                     sendMail(u, eText);
-                } catch (MessagingException e) {
-                    //TODO deal with MessegingExeption
                 }
             }
         }).start();
     }
 
-    private void sendMail(User u, Enum event) throws MessagingException{
+    private void sendMail(User u, Enum event){
         new Thread(() -> {
             try {
                 MailUtil.sendMail(serverEmailAddress, u.getEmail(), event.name(), event.toString());
             } catch (MessagingException e) {
-                //TODO deal with MessegingExeption
+                //TODO deal with Messaging Exception
             }
         }).start();
     }

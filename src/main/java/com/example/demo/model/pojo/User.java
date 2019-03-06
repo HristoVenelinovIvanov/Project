@@ -15,6 +15,8 @@ import java.util.List;
 @Table(name = "users")
 public class User {
 
+    public static final int USER_ROLE_ADMINISTRATOR = 1, IS_USER_VERIFIED = 1, IS_USER_SUBSCRIBED = 1;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "user_id")
@@ -35,6 +37,9 @@ public class User {
     private String imageUrl;
     @Column(name = "verified")
     private int verified = 0;
+    @Column(name = "subscribed")
+    private int subscribed = 0;
+
     @ManyToMany(cascade = {
             CascadeType.PERSIST,
             CascadeType.MERGE
@@ -44,8 +49,9 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
     private List<Product> favorites = new ArrayList<>();
-    @Column(name = "subscribed")
-    private int subscribe;
+
 
 }
+
+
 

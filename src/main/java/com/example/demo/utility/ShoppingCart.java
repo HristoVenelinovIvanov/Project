@@ -35,15 +35,14 @@ public class ShoppingCart {
     public void removeProductFromCart(int index, HttpServletResponse response) throws IOException {
 
         if (index > 0) {
-
             if (shoppingCart.size() == 1) {
                 shoppingCart.remove(0);
                 response.getWriter().append("Product successfully removed from the basket");
             }
-
             if (shoppingCart.size() == 0) {
                 response.getWriter().append("You are trying to remove a product from an empty basket!");
-            } else {
+            }
+            else {
                 if (shoppingCart.remove(index) != null) {
                     response.getWriter().append("Product successfully removed from the basket");
                 } else {
@@ -58,7 +57,10 @@ public class ShoppingCart {
 
     public String addProductToCart(Product product) {
 
-        return shoppingCart.add(product) ? "Product " + product.getProductId() + " has been added to the basket" : "Sorry, item could not be added to the basket";
+        return shoppingCart.add(product) ? "Product " +
+                                            product.getProductName() + " with ID " +
+                                            product.getProductId() + " has been added to the basket" :
+                                            "Sorry, item could not be added to the basket";
     }
 
     public String calculateTotalPrice() {

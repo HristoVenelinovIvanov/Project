@@ -6,6 +6,8 @@ import com.example.demo.utility.exceptions.ProductExceptions.*;
 import com.example.demo.utility.exceptions.TechnoMarketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class ProductValidator {
@@ -35,5 +37,44 @@ public class ProductValidator {
         }
 
         return true;
+    }
+
+    public TreeMap<Integer, Product> editProduct(Product oldProduct, Product newProduct) {
+
+        AtomicInteger fieldsChanged = new AtomicInteger(0);
+
+            if(newProduct.getProductName() != null) {
+                oldProduct.setProductName(newProduct.getProductName());
+                fieldsChanged.getAndIncrement();
+            }
+            if (newProduct.getCategoryId() > 0 && !productCategoryDTO.categoryExists(newProduct.getCategoryId())) {
+                oldProduct.setCategoryId(newProduct.getCategoryId());
+                fieldsChanged.getAndIncrement();
+            }
+            if (newProduct.getPrice() > 0) {
+                oldProduct.setPrice(newProduct.getPrice());
+                fieldsChanged.getAndIncrement();
+            }
+            if (newProduct.getQuantity() > 0) {
+                oldProduct.setQuantity(oldProduct.getQuantity() + newProduct.getQuantity());
+                fieldsChanged.getAndIncrement();
+            }
+            if (newProduct.getDiscounted() > 0) {
+                oldProduct.setDiscounted(newProduct.getDiscounted());
+                fieldsChanged.getAndIncrement();
+            }
+            if (newProduct.getCharacteristics() != null) {
+                oldProduct.setCharacteristics(newProduct.getCharacteristics());
+                fieldsChanged.getAndIncrement();
+            }
+            if (newProduct.getProductImage() != null) {
+                oldProduct.setProductImage(newProduct.getProductImage());
+                fieldsChanged.getAndIncrement();
+            }
+
+            TreeMap<Integer, Product> mapped = new TreeMap<>();
+            mapped.put(fieldsChanged.intValue(), oldProduct);
+
+            return mapped;
     }
 }

@@ -3,7 +3,6 @@ package com.example.demo.model.pojo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import javax.persistence.*;
 
 @NoArgsConstructor
@@ -15,7 +14,11 @@ public class UserAddress {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
+    @Column(name = "user_details_id")
     private long id;
+
+    @Column(name = "user_id")
+    private long userId;
     @Column(name = "full_name")
     private String fullName;
     @Column(name = "telephone")
@@ -38,8 +41,7 @@ public class UserAddress {
     private String floor;
     @Column(name = "apartment")
     private String apartment;
-    @Column(name = "user_id")
-    private long userId;
+
 
 
     @Override

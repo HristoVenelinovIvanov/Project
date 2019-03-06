@@ -1,11 +1,14 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.dao.UserDao;
+import com.example.demo.model.dto.ProductCategoryDTO;
+import com.example.demo.model.pojo.Category;
+import com.example.demo.model.repository.CategoryRepository;
+import com.example.demo.utility.exceptions.ProductExceptions.CategoryAlreadyExistsException;
 import com.example.demo.utility.exceptions.TechnoMarketException;
 import com.example.demo.model.repository.UserRepository;
 import com.example.demo.model.pojo.User;
 import com.example.demo.utility.exceptions.UserExceptions.*;
-import com.example.demo.utility.exceptions.ValidationExceptions.InvalidCredentinalsException;
 import com.example.demo.utility.mail.MailUtil;
 import com.github.lambdaexpression.annotation.RequestBodyParam;
 import org.mindrot.jbcrypt.BCrypt;
@@ -15,6 +18,7 @@ import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -24,16 +28,17 @@ public class UserController extends BaseController {
     private UserRepository userRepository;
     @Autowired
     private UserDao userDao;
+    @Autowired
+    private CategoryRepository categoryRepository;
+    @Autowired
+    private ProductCategoryDTO productCategoryDTO;
 
     //Register form
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    //99% finished
     public void registerUser(@RequestBody User u, HttpServletResponse response) throws Exception {
 
         if (userValidator.validateEmptyFields(u)) {
-
                 if (userRepository.findByEmail(u.getEmail()) == null) {
-
                     u.setPassword(BCrypt.hashpw(u.getPassword(), BCrypt.gensalt()));
                     userRepository.save(u);
 
@@ -41,7 +46,7 @@ public class UserController extends BaseController {
                         try {
                             MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", MailUtil.CONFIRM_MESSAGE + u.getUserId());
                         } catch (MessagingException e) {
-                            //TODO Deal with email not sending AND make the method in transaction
+                            //TODO Deal with email not sending
                         }
                     }).start();
                 }
@@ -59,79 +64,46 @@ public class UserController extends BaseController {
         if (userRepository.existsById(userId)) {
 
             User user = userRepository.findByUserId(userId);
-            if (user.getVerified() == 0) {
+            if (user.getVerified() != User.IS_USER_VERIFIED) {
                 user.setVerified(1);
-                userRepository.save(user);
+                userRepository.saveAndFlush(user);
                 response.getWriter().append("You have successfully verified your account! \nRedirecting to the login page in 5 seconds...");
                 response.setHeader("Refresh", "5; URL=http://localhost:1337/login");
-                //redirect to user; should be made by frontend-er to redirect to proper view
             }
             else {
                 throw new UserAlreadyVerifiedException();
             }
         }
         else {
-            throw new UserNotFoundExeption();
+            throw new UserNotFoundException();
         }
     }
 
-    //try to start Thread to make redirect after 5 sec
-//    public void showMessage(HttpServletResponse response){
-//        Thread message = new Thread(() -> {
-//            try {
-//                response.getWriter().append("You have successfully verified your account! \nRedirecting to the login page in 5 seconds...");
-//            } catch (IOException e) {
-//                System.out.println("lls" + e.getMessage());
-//            }
-//        });
-//        message.setDaemon(true);
-//        message.start();
-//    }
 
     //Shows all users
     @RequestMapping (value = "/users", method = RequestMethod.GET)
     public List<User> showAllUsers(HttpSession session) throws TechnoMarketException {
 
-        validateLogin(session);
+        validateAdminLogin(session);
 
-        User user = (User) session.getAttribute("userLogged");
-        //validate user
-        if (user != null){
-            if (userRepository.existsById(user.getUserId())) {
-                if (user.getUserRoleId() == 1) {
-                    List<User> users = userRepository.findAll();
-                    if (users.size() == 0) {
-                        throw new UsersNotAvailableException();
-                    }
-                    return users;
-                }
-                throw new NotAdminException("You are not allowed to do this operation!");
-            }
-            throw new UserNotFoundExeption();
+        List<User> users = userRepository.findAll();
+        if (users.isEmpty()) {
+            throw new UsersNotAvailableException();
         }
-        throw new NotLoggedException("You have to login");
+        return users;
+
     }
 
     //Shows user by ID
     @RequestMapping(value = "/users/{userId}", method = RequestMethod.GET)
         public User showUserById(@PathVariable("userId") long userId, HttpSession session) throws TechnoMarketException {
 
-        User user = userRepository.findByUserId(userId);
-        User admin = (User) session.getAttribute("userLogged");
-
-        if (admin != null) {
-            if (userRepository.existsById(admin.getUserId())) {
-                if (admin.getUserRoleId() == 1) {
-                    if (userRepository.findByUserId(userId) != null) {
-                        return user;
-                    }
-                    throw new UserNotFoundExeption();
-                }
-                throw new NotAdminException("You are not allowed to do this operation!");
-            }
-            throw new UserNotFoundExeption();
+        validateAdminLogin(session);
+        if (!userRepository.existsById(userId)){
+            throw new UserNotFoundException();
         }
-        throw new NotLoggedException("You have to login");
+
+        return userRepository.findByUserId(userId);
     }
 
     //Login user
@@ -144,44 +116,41 @@ public class UserController extends BaseController {
             if (BCrypt.checkpw(u.getPassword(), crypted)) {
                 if (userRepository.findByEmailAndPassword(u.getEmail(), crypted) != null) {
                     User user = userRepository.findByEmailAndPassword(u.getEmail(), crypted);
-                    if (user.getVerified() == 0) {
+                    if (user.getVerified() != User.IS_USER_VERIFIED) {
                         throw new UserNotActiveException();
                     }
                     session.setAttribute("userId", user.getUserId());
                     session.setAttribute("userLogged", user);
                     return user;
                 }
-                throw new UserNotFoundExeption();
+                throw new UserNotFoundException();
             }
-            throw new UserNotFoundExeption();
+            throw new UserNotFoundException();
         }
-        throw new UserNotFoundExeption();
+        throw new UserNotFoundException();
     }
 
     //Logout User
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public void logOut (HttpSession session, HttpServletResponse response) throws Exception {
+    public String logOut (HttpSession session) throws Exception {
 
-            validateLogin(session);
+        validateLogin(session);
+        session.invalidate();
 
-            if (session != null) {
-                //Killing session
-                session.invalidate();
-            }
-            response.sendRedirect("/login");
-
+        return "You have successfully logged out.";
     }
 
     //Forgotten password
     @RequestMapping(value = "/login/forgottenPassword/{email}", method = RequestMethod.GET)
     public void forgottenPassword(@PathVariable("email") String email, HttpServletResponse response) throws Exception {
 
-        if (userRepository.findByEmail(email) != null) {
+        //If user exists
+        if (userDao.getUserId(email) > 0) {
             MailUtil.sendMail(serverEmailAddress, email, "Reset password", MailUtil.FORGOTTEN_PASSWORD + userDao.getUserId(email));
-            response.getWriter().append("Email has been sent, please check your email.");
+            response.getWriter().append("An Email to reset your password has been sent, please check your email.");
         }
         else {
-            throw new UserNotFoundExeption();
+            throw new UserNotFoundException();
         }
 
     }
@@ -192,6 +161,7 @@ public class UserController extends BaseController {
     @RequestMapping(value = "/users/resetPassword/{userId}", method = RequestMethod.POST)
     public void resetForgottenPassword(@PathVariable("userId") long userId, @RequestBodyParam(name = "password") String password, HttpServletResponse response) throws Exception {
 
+        userValidator.validatePassword(password);
         User user = userRepository.findByUserId(userId);
 
         if (user != null) {
@@ -205,7 +175,7 @@ public class UserController extends BaseController {
                     response.getWriter().append("E-mail sent successfully, please check your e-mail");
                 }
                 catch (Exception e) {
-                    System.out.println("Oops, something goes wrong " + e.getMessage());
+                    System.out.println("Oops, something went wrong on our side :(" + e.getMessage());
                 }
             }).start();
             response.getWriter().append("Password reset successfully! \nRedirecting to login page after 5 seconds...");
@@ -213,54 +183,46 @@ public class UserController extends BaseController {
             response.setHeader("Refresh", "5; URL=http://localhost:1337/login");
         }
         else {
-            throw new UserNotFoundExeption();
+            throw new UserNotFoundException();
         }
     }
 
     @RequestMapping(value = "/delete/{userId}", method = RequestMethod.POST)
-    public void deleteUser(@PathVariable("userId") long userId, HttpSession session, HttpServletResponse response) throws Exception {
+    public String deleteUser(@PathVariable("userId") long userId, HttpSession session, HttpServletResponse response) throws TechnoMarketException, IOException {
 
-        validateLogin(session);
+        validateAdminLogin(session);
 
-        User user = (User) session.getAttribute("userLogged");
-
-        userValidator.isAdmin(user);
-
-        if (user != null) {
-            if (userRepository.existsById(user.getUserId())) {
-                if (user.getUserRoleId() == 1) {
-                    userRepository.delete(userRepository.findByUserId(userId));
-                    response.getWriter().append("User deleted successfully!");
-                    return;
-                }
-                else {
-                    throw new NotAdminException("User not Admin!");
-                }
+            if (userRepository.existsById(userId)) {
+                userRepository.delete(userRepository.findByUserId(userId));
+                response.getWriter().append("User with ID " + userId + " deleted successfully!");
             }
-            else {
-                throw new UserNotFoundExeption();
-            }
-        }
-        else {
-            throw new NotLoggedException("You are not logged!");
-        }
+
+        throw new UserNotFoundException();
     }
 
+    //Edits user profile
     @RequestMapping(value = "/edit", method = RequestMethod.POST)
-    public void editUser(@RequestBody User u, HttpSession session, HttpServletResponse response) throws TechnoMarketException {
+    public String editUser(@RequestBody User u, HttpSession session) throws TechnoMarketException {
+        validateAdminLogin(session);
 
-        User user = (User) session.getAttribute("userLogged");
-
-        if (user != null) {
-            if (userValidator.validateLoginFields(u)) {
+            if (userValidator.validateEmptyFields(u)) {
                 userRepository.saveAndFlush(u);
+                return "Profile edited successfully!";
             }
-            else {
-                throw new InvalidCredentinalsException("Fields are not filled properly!");
-            }
+            throw new TechnoMarketException("Oops, something went wrong on our side :(");
+    }
+
+    //Adds a category to the DB
+    @RequestMapping(value = "/products/categories/add", method = RequestMethod.GET)
+    public void addCategory(@RequestBody Category category, HttpSession session, HttpServletResponse response) throws TechnoMarketException, IOException{
+        validateAdminLogin(session);
+
+        if(productCategoryDTO.categoryExists(category.getCategoryName())) {
+            categoryRepository.save(category);
+            response.getWriter().append("Category: " + category.getCategoryName() + " added successfully with ID " + category.getId());
         }
         else {
-            throw new UserNotFoundExeption();
+            throw new CategoryAlreadyExistsException();
         }
     }
 

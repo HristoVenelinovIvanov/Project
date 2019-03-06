@@ -1,11 +1,14 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.pojo.ErrorMsg;
+import com.example.demo.model.pojo.User;
 import com.example.demo.utility.exceptions.ProductExceptions.NoProductsInBasketException;
 import com.example.demo.utility.exceptions.TechnoMarketException;
+import com.example.demo.utility.exceptions.UserExceptions.NotAdminException;
 import com.example.demo.utility.exceptions.UserExceptions.NotLoggedException;
+import com.example.demo.utility.exceptions.UserExceptions.UserNotFoundException;
+import com.example.demo.utility.exceptions.UserExceptions.UsersNotAvailableException;
 import com.example.demo.utility.validators.UserValidator;
-import com.github.lambdaexpression.annotation.EnableRequestBodyParam;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +21,13 @@ import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
 @RestController
-@EnableRequestBodyParam
 public abstract class BaseController {
 
     @Autowired
     protected UserValidator userValidator;
 
     static Logger log = Logger.getLogger(BaseController.class.getName());
-    static final String serverEmailAddress = "technomarket.project@gmail.com";
+    protected static final String serverEmailAddress = "technomarket.project@gmail.com";
 
     @ExceptionHandler({TechnoMarketException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
@@ -35,10 +37,10 @@ public abstract class BaseController {
     }
 
     @ExceptionHandler({Exception.class})
-    @ResponseStatus(value = HttpStatus.I_AM_A_TEAPOT)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     protected ErrorMsg handleMyErrors(Exception e) {
         log.log(Priority.WARN, e.getMessage(), e);
-        return new ErrorMsg(e.getMessage(), HttpStatus.I_AM_A_TEAPOT.value(), LocalDateTime.now());
+        return new ErrorMsg(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
     }
 
     @ExceptionHandler({MessagingException.class})
@@ -61,6 +63,24 @@ public abstract class BaseController {
             throw new NotLoggedException("You are not logged in!");
         }
         return true;
+    }
+
+    protected boolean validateAdminLogin(HttpSession session) throws TechnoMarketException {
+
+        validateLogin(session);
+
+        User user = (User) session.getAttribute("userLogged");
+
+        if (user != null) {
+            if (userValidator.validateLoginFields(user)) {
+                if (user.getUserRoleId() == User.USER_ROLE_ADMINISTRATOR) {
+                    return true;
+                }
+                throw new NotAdminException("You are not admin!");
+            }
+            throw new UsersNotAvailableException();
+        }
+        throw new UserNotFoundException();
     }
 
 }

@@ -7,7 +7,7 @@ import com.example.demo.model.pojo.User;
 import com.example.demo.model.repository.OrderRepository;
 import com.example.demo.model.repository.ProductRepository;
 import com.example.demo.utility.exceptions.ProductExceptions.ProductDoesNotExistException;
-import com.github.lambdaexpression.annotation.RequestBodyParam;
+import com.example.demo.utility.ordermessages.OrderMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class OrderController extends BaseController {
@@ -27,31 +28,29 @@ public class OrderController extends BaseController {
     @Autowired
     private ProductRepository productRepository;
 
-    @RequestMapping(value = "products/{productId}/order", method = RequestMethod.POST)
-    public String orderProduct(@PathVariable("productId") long productId,
-                               @RequestBody Order orderDetails,
-                               HttpSession session) throws Exception {
+    //IN PROGRESS, ALMOST WORKING
+    @RequestMapping(value = "/products/{productId}/order", method = RequestMethod.POST)
+    public void orderProduct(@PathVariable("productId") long productId, @RequestBody Order order, HttpSession session, HttpServletResponse response) throws Exception {
         validateLogin(session);
-        System.out.println(orderDetails.getQuantity() + " " + orderDetails.getAddress());
 
-        if (productDao.productExists(productId)) {
-            if (productDao.checkQuantity(productId) >= orderDetails.getQuantity()) {
-                User u = (User) session.getAttribute("userLogged");
-                System.out.println(u);
-                orderDetails.setUserId(u.getUserId());
-                System.out.println(orderDetails.getUserId());
-                System.out.println("going to save order");
-                orderRepository.save(orderDetails);
-                System.out.println("order saved");
-                System.out.println(orderDetails.getQuantity() + " " +  productId);
-                productDao.decreaseQuantity(orderDetails.getQuantity(), productId);
+        Optional<Product> productOptional = productRepository.findById(productId);
 
+        if (productOptional.isPresent()) {
+            User user = (User) session.getAttribute("userLogged");
+
+            if (productDao.checkQuantity(productId) >= order.getQuantity()) {
+                productDao.orderDecreaseQuantity(order.getQuantity(), productOptional.get());
+                order.setUserId((long) session.getAttribute("userId"));
+                orderRepository.save(order);
+                response.getWriter().append(OrderMessage.orderMessage(order, user.getEmail()));
+            }
+            else {
+                response.getWriter().append("We don't have enough in stock of product with ID " + productId);
             }
         }
         else {
             throw new ProductDoesNotExistException("The product you are trying to buy does not exists!");
         }
-        return "Everything is ok!";
     }
 
     //TODO not finished

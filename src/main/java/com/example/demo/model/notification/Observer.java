@@ -1,65 +1,59 @@
 package com.example.demo.model.notification;
 
-import com.example.demo.controller.BaseController;
-import com.example.demo.model.pojo.User;
+import com.example.demo.model.repository.ProductRepository;
 import com.example.demo.model.repository.UserRepository;
-import com.example.demo.utility.exceptions.TechnoMarketException;
-import com.example.demo.utility.mail.MailUtil;
+import com.example.demo.utility.validators.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.model.enums.Notification;
-import javax.mail.MessagingException;
-import javax.servlet.http.HttpSession;
-import static com.example.demo.model.enums.Notification.*;
+
 
 @RestController
-public class Observer extends BaseController {
+public class Observer {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ProductRepository productRepository;
+    @Autowired
+    private UserValidator userValidator;
 
-    @RequestMapping(value = "/notify/{note}", method = RequestMethod.POST)
-    public void notify(@PathVariable Notification note, HttpSession session) throws TechnoMarketException {
 
+    static final String serverEmailAddress = "technomarket.project@gmail.com";
 
-        if (validateAdminLogin(session)) {
-
-            switch (note) {
-                case DISCOUNT:
-                    eventNotify(DISCOUNT);
-                    break;
-                case BLACK_FRIDAY:
-                    eventNotify(BLACK_FRIDAY);
-                    break;
-                case CRAZY_DAYS:
-                    eventNotify(CRAZY_DAYS);
-                    break;
-                case CYBER_MONDAY:
-                    eventNotify(CYBER_MONDAY);
-                    break;
-            }
-        }
-    }
-
-    public void eventNotify(Enum eText){
-
-        new Thread(() -> {
-            for (User u : userRepository.findAll()){
-                if (u.getSubscribed() == 1) {
-                    sendMail(u, eText);
-                }
-            }
-        }).start();
-    }
-
-    private void sendMail(User u, Enum event){
-        new Thread(() -> {
-            try {
-                MailUtil.sendMail(serverEmailAddress, u.getEmail(), event.name(), event.toString());
-            } catch (MessagingException e) {
-                //TODO deal with Messaging Exception
-            }
-        }).start();
-    }
+//    @RequestMapping(value = "/notify", method = RequestMethod.POST)
+//    public void notify(@RequestBody Notification note, HttpSession session) throws TechnoMarketException {
+//
+//        User u = (User) session.getAttribute("userLogged");
+//        if (userValidator.isAdmin(u)) {
+//            switch (note) {
+//                case DISCOUNT:
+//                    sendEmails(notification.DISCOUNT);
+//                    break;
+//                case BLACK_FRIDAY:
+//                    sendEmails(notification.BLACK_FRIDAY);
+//                    break;
+//                case CRAZY_DAYS:
+//                    sendEmails(notification.CRAZY_DAYS);
+//                    break;
+//                case CYBER_MONDAY:
+//                    sendEmails(notification.CYBER_MONDAY);
+//                    break;
+//            }
+//        }
+//    }
+//
+//    @Transactional
+//    public void sendEmails(Enum eText){
+//        new Thread(() -> {
+//            try {
+//                MailUtil.sendMail(serverEmailAddress, userRepository.getAllUsersByNotify(1).getEmail(),
+//                        eText.toString(), eText.toString() +
+//                                userRepository.getAllUsersByNotify(1).getUserId());
+//            } catch (MessagingException e) {
+//                //TODO Deal with email not sending AND make the method in transaction
+//            }
+//        }).start();
+//    }
 
 }

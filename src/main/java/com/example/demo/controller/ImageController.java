@@ -1,20 +1,16 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.dto.ImageUploadDTO;
 import com.example.demo.model.pojo.User;
 import com.example.demo.model.repository.UserRepository;
 import com.example.demo.utility.exceptions.TechnoMarketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.mail.Multipart;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Base64;
 
 @RestController
 public class ImageController extends BaseController{

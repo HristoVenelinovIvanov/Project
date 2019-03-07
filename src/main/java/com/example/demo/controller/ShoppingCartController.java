@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class ShoppingCartController extends BaseController{
@@ -27,7 +28,7 @@ public class ShoppingCartController extends BaseController{
 
     //Returns items in the cart
     @RequestMapping(value = "/shoppingCart", method = RequestMethod.GET)
-    public List<Product> shoppingCart(HttpSession session) throws TechnoMarketException {
+    public Map<String, List<Product>> shoppingCart(HttpSession session) throws TechnoMarketException {
         validateLogin(session);
         return shoppingCart.viewProducts();
     }
@@ -40,7 +41,7 @@ public class ShoppingCartController extends BaseController{
     }
 
     //Adds a product to cart and returns an successful/not successful response
-    @RequestMapping(value = "/shoppingCart/addProduct/{productId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/shoppingCart/addProduct/{productId}", method = RequestMethod.POST)
     public void addProductToCart(@PathVariable("productId") long productId, HttpSession session, HttpServletResponse response) throws Exception {
 
         validateLogin(session);
@@ -53,7 +54,6 @@ public class ShoppingCartController extends BaseController{
         else {
             throw new ProductDoesNotExistException("The product you are trying to add does not exists!");
         }
-
     }
 
     //Removes a product from the cart and returns an successful/not successful response

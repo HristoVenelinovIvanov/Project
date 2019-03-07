@@ -1,13 +1,12 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.dao.ProductDao;
-import com.example.demo.model.dto.ProductCategoryDTO;
+import com.example.demo.model.dao.ProductCategoryDao;
 import com.example.demo.model.pojo.Product;
 import com.example.demo.model.repository.ProductRepository;
 import com.example.demo.utility.exceptions.ProductExceptions.ProductDoesNotExistException;
 import com.example.demo.utility.exceptions.TechnoMarketException;
 import com.example.demo.utility.validators.ProductValidator;
-import com.mysql.cj.protocol.Resultset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
@@ -17,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 @RestController
@@ -31,6 +30,8 @@ public class ProductController extends BaseController{
     private ProductDao productDao;
     @Autowired
     private ProductValidator productValidator;
+    @Autowired
+    private ProductCategoryDao productCategoryDao;
 
     //Displaying all products
     @RequestMapping(value = "/products", method = RequestMethod.GET)
@@ -41,11 +42,10 @@ public class ProductController extends BaseController{
             return allProducts;
         }
         throw new ProductDoesNotExistException("Sorry, No products available at the minute.");
-
     }
 
     //Searching an product that contains the given string
-    @RequestMapping(value = "/products/{search}", method = RequestMethod.GET)
+    @RequestMapping(value = "/products/search/{search}", method = RequestMethod.GET)
     public List<Product> search(@PathVariable(name = "search") String containsName) throws TechnoMarketException {
 
         if (productDao.productExists(containsName)) {
@@ -86,19 +86,38 @@ public class ProductController extends BaseController{
     @RequestMapping(value = "/products/{productId}/edit", method = RequestMethod.POST)
     public Map<Integer, Product> editProduct(@PathVariable("productId") long productId, @RequestBody Product newProduct) throws TechnoMarketException {
 
-        if (productDao.productExists(productId)) {
-            Product editedProduct = productRepository.findByProductId(productId);
+        Optional<Product> product = Optional.ofNullable(productRepository.findByProductId(productId));
+        if (product.isPresent()) {
+            Product editedProduct = product.get();
             TreeMap<Integer, Product> map = productValidator.editProduct(editedProduct, newProduct);
             productRepository.saveAndFlush(editedProduct);
             return map;
-        }
 
+        }
         throw new ProductDoesNotExistException("The product you are trying to edit does not exists!");
     }
 
-    @RequestMapping(value = "/products/find/{inches}", method = RequestMethod.GET)
-    public ResultSet getProductByInches(@PathVariable(name = "inches") long inches) throws Exception{
+    @RequestMapping(value = "/products/laptops",method = RequestMethod.GET)
+    public List<Product> allLaptops() throws ProductDoesNotExistException {
 
-        return productDao.getAllFilteredProducts(inches);
+        List<Product> laptops = productRepository.findAllByCategoryId(14);
+
+        if(laptops.isEmpty()) {
+            throw new ProductDoesNotExistException("Sorry, no products in this category");
+        }
+        return laptops;
     }
+
+    @RequestMapping(value = "/products/phones",method = RequestMethod.GET)
+    public List<Map<String, Object>> allPhones() throws ProductDoesNotExistException {
+
+        List<Map<String, Object>> phones = productCategoryDao.allPhones();
+
+        if(phones.isEmpty()) {
+            throw new ProductDoesNotExistException("Sorry, no products in this category");
+        }
+
+        return phones;
+    }
+
 }

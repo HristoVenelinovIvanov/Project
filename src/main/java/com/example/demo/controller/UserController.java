@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.dao.UserDao;
-import com.example.demo.model.dto.ProductCategoryDTO;
+import com.example.demo.model.dao.ProductCategoryDao;
 import com.example.demo.model.pojo.Category;
 import com.example.demo.model.repository.CategoryRepository;
 import com.example.demo.utility.exceptions.ProductExceptions.CategoryAlreadyExistsException;
@@ -10,14 +10,13 @@ import com.example.demo.model.repository.UserRepository;
 import com.example.demo.model.pojo.User;
 import com.example.demo.utility.exceptions.UserExceptions.*;
 import com.example.demo.utility.mail.MailUtil;
-import com.github.lambdaexpression.annotation.RequestBodyParam;
+import net.bytebuddy.utility.RandomString;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
 
@@ -31,7 +30,7 @@ public class UserController extends BaseController {
     @Autowired
     private CategoryRepository categoryRepository;
     @Autowired
-    private ProductCategoryDTO productCategoryDTO;
+    private ProductCategoryDao productCategoryDao;
 
     //Register form
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -68,7 +67,7 @@ public class UserController extends BaseController {
                 user.setVerified(1);
                 userRepository.saveAndFlush(user);
                 response.getWriter().append("You have successfully verified your account! \nRedirecting to the login page in 5 seconds...");
-                response.setHeader("Refresh", "5; URL=http://localhost:1337/login");
+                response.setHeader("Refresh", "5; URL=http://localhost:1337/products");
             }
             else {
                 throw new UserAlreadyVerifiedException();
@@ -78,7 +77,6 @@ public class UserController extends BaseController {
             throw new UserNotFoundException();
         }
     }
-
 
     //Shows all users
     @RequestMapping (value = "/users", method = RequestMethod.GET)
@@ -102,7 +100,6 @@ public class UserController extends BaseController {
         if (!userRepository.existsById(userId)){
             throw new UserNotFoundException();
         }
-
         return userRepository.findByUserId(userId);
     }
 
@@ -146,8 +143,18 @@ public class UserController extends BaseController {
 
         //If user exists
         if (userDao.getUserId(email) > 0) {
-            MailUtil.sendMail(serverEmailAddress, email, "Reset password", MailUtil.FORGOTTEN_PASSWORD + userDao.getUserId(email));
-            response.getWriter().append("An Email to reset your password has been sent, please check your email.");
+
+            String randomPassword = RandomString.make(8);
+            MailUtil.sendMail(serverEmailAddress, email, "Reset password", MailUtil.FORGOTTEN_PASSWORD +     randomPassword);
+            userValidator.validatePassword(randomPassword);
+
+            User user = userRepository.findByEmail(email);
+
+            if (user != null) {
+                user.setPassword(BCrypt.hashpw(randomPassword, BCrypt.gensalt()));
+                userRepository.saveAndFlush(user);
+            }
+            response.getWriter().append("An Email with your new password has been sent, please check your email.");
         }
         else {
             throw new UserNotFoundException();
@@ -155,39 +162,8 @@ public class UserController extends BaseController {
 
     }
 
-    //Reset password with ID
-    //with transaction
-    @Transactional
-    @RequestMapping(value = "/users/resetPassword/{userId}", method = RequestMethod.POST)
-    public void resetForgottenPassword(@PathVariable("userId") long userId, @RequestBodyParam(name = "password") String password, HttpServletResponse response) throws Exception {
 
-        userValidator.validatePassword(password);
-        User user = userRepository.findByUserId(userId);
-
-        if (user != null) {
-            user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
-            userRepository.saveAndFlush(user);
-
-            new Thread( () -> {
-                try {
-                    MailUtil.sendMail(serverEmailAddress, user.getEmail(), "Password reset", MailUtil.PASSWORD_RESET);
-                    //only if successfully sent
-                    response.getWriter().append("E-mail sent successfully, please check your e-mail");
-                }
-                catch (Exception e) {
-                    System.out.println("Oops, something went wrong on our side :(" + e.getMessage());
-                }
-            }).start();
-            response.getWriter().append("Password reset successfully! \nRedirecting to login page after 5 seconds...");
-            //redirecting after 5 seconds
-            response.setHeader("Refresh", "5; URL=http://localhost:1337/login");
-        }
-        else {
-            throw new UserNotFoundException();
-        }
-    }
-
-    @RequestMapping(value = "/delete/{userId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/users/delete/{userId}", method = RequestMethod.POST)
     public String deleteUser(@PathVariable("userId") long userId, HttpSession session, HttpServletResponse response) throws TechnoMarketException, IOException {
 
         validateAdminLogin(session);
@@ -201,9 +177,10 @@ public class UserController extends BaseController {
     }
 
     //Edits user profile
-    @RequestMapping(value = "/edit", method = RequestMethod.POST)
+    //Not working
+    @RequestMapping(value = "/users/edit", method = RequestMethod.POST)
     public String editUser(@RequestBody User u, HttpSession session) throws TechnoMarketException {
-        validateAdminLogin(session);
+        validateLogin(session);
 
             if (userValidator.validateEmptyFields(u)) {
                 userRepository.saveAndFlush(u);
@@ -217,7 +194,7 @@ public class UserController extends BaseController {
     public void addCategory(@RequestBody Category category, HttpSession session, HttpServletResponse response) throws TechnoMarketException, IOException{
         validateAdminLogin(session);
 
-        if(productCategoryDTO.categoryExists(category.getCategoryName())) {
+        if(productCategoryDao.categoryExists(category.getCategoryName())) {
             categoryRepository.save(category);
             response.getWriter().append("Category: " + category.getCategoryName() + " added successfully with ID " + category.getId());
         }

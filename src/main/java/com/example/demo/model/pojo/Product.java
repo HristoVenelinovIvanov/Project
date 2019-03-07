@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import javax.persistence.*;
+import java.util.Objects;
 
 @NoArgsConstructor
 @Getter
@@ -59,12 +60,25 @@ public class Product {
     @Column(name = "inbuild_dryer")
     private long inbuildDryer;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Product)) return false;
+        Product product = (Product) o;
+        return productId == product.productId &&
+                Double.compare(product.price, price) == 0 &&
+                quantity == product.quantity &&
+                quantityOnOrder == product.quantityOnOrder &&
+                categoryId == product.categoryId &&
+                discounted == product.discounted &&
+                Objects.equals(productName, product.productName) &&
+                Objects.equals(productImage, product.productImage);
+    }
 
-
-
-
-
-
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(productId, productName, price,
+                quantity, quantityOnOrder, categoryId, discounted, productImage);
+    }
 }
 

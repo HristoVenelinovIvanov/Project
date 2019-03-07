@@ -5,7 +5,7 @@ public enum Notification {
     DISCOUNT {
         @Override
         public String toString() {
-            return "Hello, \nThere is a discount. Check the discounts here:" +
+            return "Hello, \nThere is a discount. Check it here:" +
                     " \nhttp://localhost:1337/home/discount";
         }
     },
@@ -13,7 +13,7 @@ public enum Notification {
     BLACK_FRIDAY {
         @Override
         public String toString() {
-            return "Hello, \nToday is black friday! Check the discounts here:" +
+            return "Hello, \nNow is black friday. Check it here:" +
                     " \nhttp://localhost:1337/home/discount";
         }
     },
@@ -21,7 +21,7 @@ public enum Notification {
     CRAZY_DAYS {
         @Override
         public String toString() {
-            return "Hello, \nThe upcoming days are beyond crazy. Check our crazy prices at:" +
+            return "Hello, \nNow are crazy days. Check it here:" +
                     " \nhttp://localhost:1337/home/discount";
         }
     },

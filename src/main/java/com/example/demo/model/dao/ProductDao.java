@@ -1,21 +1,22 @@
 package com.example.demo.model.dao;
 
 import com.example.demo.model.pojo.Product;
+import com.example.demo.model.repository.ProductRepository;
+import com.example.demo.utility.exceptions.ProductExceptions.ProductDoesNotExistException;
+import com.example.demo.utility.exceptions.TechnoMarketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ProductDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private ProductRepository productRepository;
 
     public boolean productExists(long productId) {
 
@@ -38,33 +39,12 @@ public class ProductDao {
         return jdbcTemplate.queryForObject(sql, new Object[] {productId}, int.class);
     }
 
+    public void orderDecreaseQuantity(long quantity, Product product) {
 
-    public ResultSet getAllFilteredProducts(long inches) throws Exception{
+            product.setQuantity(product.getQuantity() - quantity);
+            product.setQuantityOnOrder(product.getQuantityOnOrder() + quantity);
+            productRepository.saveAndFlush(product);
 
-        try {
-            Connection con = jdbcTemplate.getDataSource().getConnection();
-            {
-                String sql = "SELECT * FROM products WHERE inches = ?";
-                List<Product> productsList = new ArrayList<>();
-                PreparedStatement ps = con.prepareStatement(sql);
-                ps.setLong(1, inches);
-                ResultSet rs = ps.executeQuery();
-
-                return rs;
-            }
-        }
-        catch (Exception e){
-
-
-        }
-        return null;
-    }
-
-    public long decreaseQuantity(long quantity, long productId) {
-
-        String sql = "UPDATE products SET quantity -= ? WHERE product_id = ?";
-
-        return jdbcTemplate.update(sql, new Object[] {quantity, productId}, long.class);
     }
 
 }

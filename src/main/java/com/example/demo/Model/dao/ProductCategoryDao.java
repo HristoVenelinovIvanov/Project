@@ -1,19 +1,17 @@
-package com.example.demo.model.dto;
+package com.example.demo.model.dao;
 
-import com.example.demo.model.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import java.util.List;
+import java.util.Map;
 
 
 @Component
-public class ProductCategoryDTO {
+public class ProductCategoryDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private CategoryRepository categoryRepository;
-
 
     //****RETURNS FALSE**** if the category exists.
     public boolean categoryExists(long categoryToCheck) {
@@ -31,7 +29,12 @@ public class ProductCategoryDTO {
         return !(jdbcTemplate.queryForObject(sql,new Object[] {categoryName}, int.class) > 0);
     }
 
+        public List<Map<String, Object>> allPhones() {
 
+        String sql = "select p.* from products as p join categories as c on p.category_id=c.category_id where c.parent_id = 4";
+
+        return jdbcTemplate.queryForList(sql);
+    }
 
 
 }

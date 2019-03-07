@@ -2,6 +2,7 @@ package com.example.demo.utility;
 
 import com.example.demo.model.pojo.Product;
 import com.example.demo.utility.exceptions.ProductExceptions.NoProductsInBasketException;
+import com.example.demo.utility.exceptions.ProductExceptions.ProductDoesNotExistException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,7 +10,9 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Setter
 @Getter
@@ -24,23 +27,29 @@ public class ShoppingCart {
         return shoppingCart.size();
     }
 
-    public List<Product> viewProducts() throws NoProductsInBasketException {
+    public Map<String, List<Product>> viewProducts() throws NoProductsInBasketException {
+
         if (!shoppingCart.isEmpty()) {
             calculateTotalPrice();
-            return shoppingCart;
+            HashMap<String, List<Product>> priceAndProducts = new HashMap<>();
+            priceAndProducts.put(calculateTotalPrice(), shoppingCart);
+
+            return priceAndProducts;
         }
         throw new NoProductsInBasketException();
     }
 
-    public void removeProductFromCart(int index, HttpServletResponse response) throws IOException {
+
+    public void removeProductFromCart(int index, HttpServletResponse response) throws IOException, ProductDoesNotExistException {
+
+        if (index > shoppingCart.size()) {
+            throw new ProductDoesNotExistException("You are trying to access an index that is out of bounds of the shopping cart!");
+        }
 
         if (index > 0) {
             if (shoppingCart.size() == 1) {
                 shoppingCart.remove(0);
                 response.getWriter().append("Product successfully removed from the basket");
-            }
-            if (shoppingCart.size() == 0) {
-                response.getWriter().append("You are trying to remove a product from an empty basket!");
             }
             else {
                 if (shoppingCart.remove(index) != null) {

@@ -35,6 +35,12 @@ public abstract class BaseController {
         log.log(Priority.WARN, e.getMessage(), e);
         return new ErrorMsg(e.getMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
     }
+    @ExceptionHandler({NotLoggedException.class, NotAdminException.class})
+    @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+    public ErrorMsg unathorizedAccess(Exception e) {
+        log.log(Priority.WARN, e.getMessage(), e);
+        return new ErrorMsg(e.getMessage(), HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
+    }
 
     @ExceptionHandler({Exception.class})
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
@@ -76,7 +82,7 @@ public abstract class BaseController {
                 if (user.getUserRoleId() == User.USER_ROLE_ADMINISTRATOR) {
                     return true;
                 }
-                throw new NotAdminException("You are not admin!");
+                throw new NotAdminException("User is not an admin!");
             }
             throw new UsersNotAvailableException();
         }

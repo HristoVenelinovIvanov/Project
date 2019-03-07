@@ -24,14 +24,12 @@ public class Order {
     private String address;
     @Column(name = "quantity")
     private long quantity;
-//    @Column(name = "status")
-//    private String status = "Not shipped";
-//    //By default sets the shipping date 2 weeks ahead if required shipping date is not set.
-//    @Column(name = "required_date")
-//    private String requiredDate = LocalDate.now().plus(2, ChronoUnit.WEEKS).toString();
-//    @Column(name = "shipped_date")
-//    private String shippedDate;
-
-
+    @Column(name = "status")
+    private String status = "Not shipped";
+    //By default sets the shipping date 2 weeks ahead if required shipping date is not set.
+    @Column(name = "required_date")
+    private String requiredDate = LocalDate.now().plus(2, ChronoUnit.WEEKS).toString();
+    @Column(name = "shipped_date")
+    private String shippedDate = "Not given";
 
 }

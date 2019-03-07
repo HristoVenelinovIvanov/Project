@@ -1,6 +1,6 @@
 package com.example.demo.utility.validators;
 
-import com.example.demo.model.dto.ProductCategoryDTO;
+import com.example.demo.model.dao.ProductCategoryDao;
 import com.example.demo.model.pojo.Product;
 import com.example.demo.utility.exceptions.ProductExceptions.*;
 import com.example.demo.utility.exceptions.TechnoMarketException;
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ProductValidator {
 
     @Autowired
-    private ProductCategoryDTO productCategoryDTO;
+    private ProductCategoryDao productCategoryDao;
 
     public boolean validateProduct(Product product) throws TechnoMarketException {
 
@@ -26,7 +26,7 @@ public class ProductValidator {
         if (product.getQuantity() <= 0) {
             throw new QuantityNotValidException("Please enter valid product quantity!");
         }
-        if (product.getCategoryId() <= 0 || productCategoryDTO.categoryExists(product.getCategoryId())) {
+        if (product.getCategoryId() <= 0 || productCategoryDao.categoryExists(product.getCategoryId())) {
             throw new CategoryNotFoundException();
         }
         if (product.getQuantityOnOrder() < 0) {
@@ -39,7 +39,7 @@ public class ProductValidator {
         return true;
     }
 
-    public TreeMap<Integer, Product> editProduct(Product oldProduct, Product newProduct) {
+    public synchronized TreeMap<Integer, Product> editProduct(Product oldProduct, Product newProduct) {
 
         AtomicInteger fieldsChanged = new AtomicInteger(0);
 
@@ -47,7 +47,7 @@ public class ProductValidator {
                 oldProduct.setProductName(newProduct.getProductName());
                 fieldsChanged.getAndIncrement();
             }
-            if (newProduct.getCategoryId() > 0 && !productCategoryDTO.categoryExists(newProduct.getCategoryId())) {
+            if (newProduct.getCategoryId() > 0 && !productCategoryDao.categoryExists(newProduct.getCategoryId())) {
                 oldProduct.setCategoryId(newProduct.getCategoryId());
                 fieldsChanged.getAndIncrement();
             }

@@ -31,13 +31,39 @@ public class Product {
     @Column(name = "category_id")
     private long categoryId;
     @Column(name = "discounted")
-    private int discounted;
-    @Column(name = "characteristics")
-    private String characteristics;
+    private double discounted;
     @Column(name = "product_image")
     private String productImage;
+    @Column(name = "brand")
+    private String brand;
     @Column(name = "inches")
-    private long inches;
+    private double inches;
+    @Column(name = "frequency")
+    private long frequency;
+    @Column(name = "kw")
+    private long kw;
+    @Column(name = "number_of_hobs")
+    private long numberOfHobs;
+    @Column(name = "timer")
+    private long timer;
+    @Column(name = "camera_pixels")
+    private double cameraPixels;
+    @Column(name = "finger_print")
+    private long fingerPrint;
+    @Column(name = "water_proof")
+    private long waterProof;
+    @Column(name = "kg_capacity")
+    private long kgCapacity;
+    @Column(name = "intelligent_wash")
+    private long intelligentWash;
+    @Column(name = "inbuild_dryer")
+    private long inbuildDryer;
+
+
+
+
+
+
 
 
 }

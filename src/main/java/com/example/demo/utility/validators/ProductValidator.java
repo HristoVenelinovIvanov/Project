@@ -63,10 +63,9 @@ public class ProductValidator {
                 oldProduct.setDiscounted(newProduct.getDiscounted());
                 fieldsChanged.getAndIncrement();
             }
-            if (newProduct.getCharacteristics() != null) {
-                oldProduct.setCharacteristics(newProduct.getCharacteristics());
-                fieldsChanged.getAndIncrement();
-            }
+
+            //TODO make it possible to edit characteristics
+
             if (newProduct.getProductImage() != null) {
                 oldProduct.setProductImage(newProduct.getProductImage());
                 fieldsChanged.getAndIncrement();

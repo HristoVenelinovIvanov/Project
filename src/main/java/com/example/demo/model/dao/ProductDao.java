@@ -1,6 +1,8 @@
 package com.example.demo.model.dao;
 
 import com.example.demo.model.pojo.Product;
+import com.example.demo.model.repository.OrderRepository;
+import com.example.demo.model.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,8 @@ public class ProductDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private ProductRepository productRepository;
 
     public boolean productExists(long productId) {
 
@@ -60,11 +64,11 @@ public class ProductDao {
         return null;
     }
 
-    public long decreaseQuantity(long quantity, long productId) {
+    public void decreaseQuantity(long quantity, long productId) {
 
-        String sql = "UPDATE products SET quantity -= ? WHERE product_id = ?";
-
-        return jdbcTemplate.update(sql, new Object[] {quantity, productId}, long.class);
+        Product p = productRepository.getOne(productId);
+                p.setQuantity(p.getQuantity() - quantity);
+        productRepository.save(productRepository.getOne(productId));
     }
 
 }

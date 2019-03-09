@@ -37,6 +37,9 @@ public class OrderController extends BaseController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    public static final int DELETE_COMMA = 1;
+    public static final int DELETE_WHERE_CLAUSE = 5;
+
     //Ordering only one product
     @RequestMapping(value = "/products/{productId}/order", method = RequestMethod.POST)
     @Transactional
@@ -157,8 +160,8 @@ public class OrderController extends BaseController {
         }
 
         StringBuffer sql = new StringBuffer();
-        select.setLength(select.length() - 1);
-        where.setLength(where.length() - 5);
+        select.setLength(select.length() - DELETE_COMMA);
+        where.setLength(where.length() - DELETE_WHERE_CLAUSE);
         sql.append(select).append(from).append(where);
         System.out.println(sql);
         List<Map<String, Object>> list = jdbcTemplate.queryForList(sql.toString());

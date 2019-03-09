@@ -3,6 +3,7 @@ package com.example.demo.model.repository;
 import com.example.demo.model.pojo.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
+import java.util.Map;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 

@@ -80,5 +80,31 @@ public class Product {
         return Objects.hash(productId, productName, price,
                 quantity, quantityOnOrder, categoryId, discounted, productImage);
     }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "productId=" + productId +
+                ", productName='" + productName + '\'' +
+                ", price=" + price +
+                ", quantity=" + quantity +
+                ", quantityOnOrder=" + quantityOnOrder +
+                ", categoryId=" + categoryId +
+                ", discounted=" + discounted +
+                ", productImage='" + productImage + '\'' +
+                ", brand='" + brand + '\'' +
+                ", inches=" + inches +
+                ", frequency=" + frequency +
+                ", kw=" + kw +
+                ", numberOfHobs=" + numberOfHobs +
+                ", timer=" + timer +
+                ", cameraPixels=" + cameraPixels +
+                ", fingerPrint=" + fingerPrint +
+                ", waterProof=" + waterProof +
+                ", kgCapacity=" + kgCapacity +
+                ", intelligentWash=" + intelligentWash +
+                ", inbuildDryer=" + inbuildDryer +
+                '}';
+    }
 }
 

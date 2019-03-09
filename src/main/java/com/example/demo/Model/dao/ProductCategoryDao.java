@@ -29,10 +29,9 @@ public class ProductCategoryDao {
         return !(jdbcTemplate.queryForObject(sql,new Object[] {categoryName}, int.class) > 0);
     }
 
-        public List<Map<String, Object>> allPhones() {
+    public List<Map<String, Object>> allPhones() {
 
         String sql = "select p.* from products as p join categories as c on p.category_id=c.category_id where c.parent_id = 4";
-
         return jdbcTemplate.queryForList(sql);
     }
 

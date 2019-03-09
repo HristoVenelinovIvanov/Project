@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -31,6 +32,12 @@ public class UserController extends BaseController {
     private CategoryRepository categoryRepository;
     @Autowired
     private ProductCategoryDao productCategoryDao;
+
+    public String getPath(){
+        String path = "C:" + File.separator + "Users" + File.separator +
+                "Prod" + File.separator + "Desktop" + File.separator + "images" + File.separator;
+        return path;
+    }
 
     //Register form
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -80,16 +87,14 @@ public class UserController extends BaseController {
 
     //Shows all users
     @RequestMapping (value = "/users", method = RequestMethod.GET)
-    public List<User> showAllUsers(HttpSession session) throws TechnoMarketException {
+    public List<User> showAllUsers(HttpSession session, HttpServletResponse response) throws TechnoMarketException, IOException {
 
         validateAdminLogin(session);
-
         List<User> users = userRepository.findAll();
         if (users.isEmpty()) {
             throw new UsersNotAvailableException();
         }
         return users;
-
     }
 
     //Shows user by ID

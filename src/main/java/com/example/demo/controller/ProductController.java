@@ -120,4 +120,9 @@ public class ProductController extends BaseController{
         return phones;
     }
 
+    @RequestMapping(value = "/products/discounted",method = RequestMethod.GET)
+    public List<Map<String, Object>> allDiscounted() throws ProductDoesNotExistException {
+        return productDao.getAllDiscounted();
+    }
+
 }

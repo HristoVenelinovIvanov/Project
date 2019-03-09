@@ -37,9 +37,6 @@ public class OrderController extends BaseController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public static final int DELETE_COMMA = 1;
-    public static final int DELETE_WHERE_CLAUSE = 5;
-
     //Ordering only one product
     @RequestMapping(value = "/products/{productId}/order", method = RequestMethod.POST)
     @Transactional
@@ -76,7 +73,6 @@ public class OrderController extends BaseController {
         }
     }
 
-
     @RequestMapping(value = "products/filter/", method = RequestMethod.GET)
     public List<Map<String, Object>> takeFilteredFromDB(
             @RequestParam(value = "product_name", required = false) String productName,
@@ -95,81 +91,10 @@ public class OrderController extends BaseController {
             @RequestParam(value = "intelligent_wash", required = false) String intelligentWash,
             @RequestParam(value = "inbuild_dryer", required = false) String inbuildDryer) {
 
-        System.out.println(discounted);
-        StringBuffer select = new StringBuffer("SELECT price ,product_name ,");
-        StringBuffer from = new StringBuffer("FROM test1339.products ");
-        StringBuffer where = new StringBuffer("WHERE");
-
-        if (productName != null && !productName.isEmpty()) {
-            where.append(" product_name =").append("'").append(productName).append("' AND ");
-        }
-        if (price != null && !price.isEmpty()) {
-            where.append(" price =").append(price).append(" AND ");
-        }
-        if (discounted != null && !discounted.isEmpty()) {
-            select.append("discounted ,");
-            where.append(" discounted =").append("'").append(discounted).append("' AND ");
-        }
-        if (brand != null && !brand.isEmpty()) {
-            select.append("brand ,");
-            where.append(" brand =").append("'").append(brand).append("' AND ");
-        }
-        if (inches != null && !inches.isEmpty()) {
-            select.append("inches ,");
-            where.append(" inches =").append(inches).append(" AND ");
-        }
-        if (frequency != null && !frequency.isEmpty()) {
-            select.append("frequency ,");
-            where.append(" frequency =").append(frequency).append(" AND ");
-        }
-        if (kw != null && !kw.isEmpty()) {
-            select.append("kw ,");
-            where.append(" kw =").append(kw).append(" AND ");
-        }
-        if (numberOfHobs != null && !numberOfHobs.isEmpty()) {
-            select.append("number_of_hobs ,");
-            where.append(" number_of_hobs =").append(numberOfHobs).append(" AND ");
-        }
-        if (timer != null && !timer.isEmpty()) {
-            select.append("timer ,");
-            where.append(" timer =").append(timer).append(" AND ");
-        }
-        if (cameraPixels != null && !cameraPixels.isEmpty()) {
-            select.append("camera_pixels ,");
-            where.append(" camera_pixels =").append(cameraPixels).append(" IS NOT NULL AND ");
-        }
-        if (fingerPrint != null && !fingerPrint.isEmpty()) {
-            select.append("finger_print ,");
-            where.append(" finger_print =").append(fingerPrint).append(" AND ");
-        }
-        if (waterProof != null && !waterProof.isEmpty()) {
-            select.append("water_proof ,");
-            where.append(" water_proof =").append(waterProof).append(" AND ");
-        }
-        if (kgCapacity != null && !kgCapacity.isEmpty()) {
-            select.append("kg_capacity ,");
-            where.append(" kg_capacity =").append(kgCapacity).append(" AND ");
-        }
-        if (intelligentWash != null && !intelligentWash.isEmpty()) {
-            select.append("intelligent_wash ,");
-            where.append(" intelligent_wash =").append(intelligentWash).append(" AND ");
-        }
-        if (inbuildDryer != null && !inbuildDryer.isEmpty()) {
-            select.append("inbuild_dryer ,");
-            where.append(" inbuild_dryer =").append(inbuildDryer).append(" AND ");
-        }
-
-        StringBuffer sql = new StringBuffer();
-        select.setLength(select.length() - DELETE_COMMA);
-        where.setLength(where.length() - DELETE_WHERE_CLAUSE);
-        sql.append(select).append(from).append(where);
-        System.out.println(sql);
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(sql.toString());
-        System.out.println(list.toString());
-        return jdbcTemplate.queryForList(sql.toString());
-
+        String sql = productDao.filterProducts(productName, price, discounted, brand, inches, frequency, kw, numberOfHobs,timer,
+                cameraPixels, fingerPrint, waterProof, kgCapacity, intelligentWash, inbuildDryer);
+        return jdbcTemplate.queryForList(sql);
     }
-
 
 
 }

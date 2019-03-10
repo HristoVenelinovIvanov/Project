@@ -16,10 +16,11 @@ public class ProductImage {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     @Column(name = "product_image_id")
-    private long productsImageId;
+    private long productImageId;
     @Column(name = "image_name")
     private String imageName;
     @Column(name = "product_id")
-    private String productId;
+    private long productId;
+
 
 }

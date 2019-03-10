@@ -10,6 +10,8 @@ import com.example.demo.utility.exceptions.TechnoMarketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,19 +51,19 @@ public class ImageController extends BaseController{
     }
 
     @RequestMapping(value = "/products/images", method = RequestMethod.POST)
-    public void uploadProductImage(@RequestParam MultipartFile img, HttpSession ses) throws IOException, TechnoMarketException {
+    public void uploadProductImage(@RequestParam MultipartFile img, HttpServletResponse response, HttpSession ses) throws IOException, TechnoMarketException {
 
         validateAdminLogin(ses);
-        User u = (User) ses.getAttribute("userLogged");
         byte[] bytes = img.getBytes();
         ProductImage p = new ProductImage();
-        String name = getPath() + p.getProductId() + System.currentTimeMillis()+ ".png";
+        String name = getPath() + System.currentTimeMillis()+ ".png";
         p.setImageName(name);
         File newImage = new File(name);
         FileOutputStream fos = new FileOutputStream(newImage);
         fos.write(bytes);
         fos.close();
-        productImageRepository.saveAndFlush(p);
+        productImageRepository.save(p);
+        response.getWriter().append("The uploaded image has Id: " + p.getProductImageId());
     }
 
     @GetMapping(value="/images/{name}", produces = "image/png")

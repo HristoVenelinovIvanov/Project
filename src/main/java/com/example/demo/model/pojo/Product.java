@@ -60,6 +60,15 @@ public class Product {
     @Column(name = "inbuild_dryer")
     private long inbuildDryer;
 
+//    @OneToOne(cascade = {
+//            CascadeType.PERSIST,
+//            CascadeType.MERGE
+//    })
+//    @JoinTable(name = "products_images",
+//            joinColumns = @JoinColumn(name = "product_id"),
+//            inverseJoinColumns = @JoinColumn(name = "product_id")
+//    )
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -106,5 +115,6 @@ public class Product {
                 ", inbuildDryer=" + inbuildDryer +
                 '}';
     }
+
 }
 

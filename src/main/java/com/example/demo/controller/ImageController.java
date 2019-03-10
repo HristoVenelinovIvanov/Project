@@ -1,6 +1,10 @@
 package com.example.demo.controller;
 
+import com.example.demo.model.pojo.Product;
+import com.example.demo.model.pojo.ProductImage;
 import com.example.demo.model.pojo.User;
+import com.example.demo.model.repository.ProductImageRepository;
+import com.example.demo.model.repository.ProductRepository;
 import com.example.demo.model.repository.UserRepository;
 import com.example.demo.utility.exceptions.TechnoMarketException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +21,10 @@ public class ImageController extends BaseController{
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ProductRepository productRepository;
+    @Autowired
+    private ProductImageRepository productImageRepository;
 
     public String getPath(){
         String path = "C:" + File.separator + "Users" + File.separator +
@@ -24,20 +32,36 @@ public class ImageController extends BaseController{
         return path;
     }
 
-    @PostMapping("/images")
-    public void uploadImage(@RequestParam MultipartFile img, HttpSession ses) throws IOException, TechnoMarketException {
+    @PostMapping("/user/images")
+    public void uploadUserImage(@RequestParam MultipartFile img, HttpSession ses) throws IOException, TechnoMarketException {
 
-        validateAdminLogin(ses);
+        validateLogin(ses);
         User user = (User) ses.getAttribute("userLogged");
         System.out.println(user);
         byte[] bytes = img.getBytes();
-        String name = user.getUserId() + System.currentTimeMillis()+".png";
-        File newImage = new File(getPath() + name);
+        String name = getPath() + user.getUserId() + System.currentTimeMillis()+".png";
+        File newImage = new File(name);
         FileOutputStream fos = new FileOutputStream(newImage);
         fos.write(bytes);
         fos.close();
         user.setImageUrl(name);
         userRepository.saveAndFlush(user);
+    }
+
+    @RequestMapping(value = "/products/images", method = RequestMethod.POST)
+    public void uploadProductImage(@RequestParam MultipartFile img, HttpSession ses) throws IOException, TechnoMarketException {
+
+        validateAdminLogin(ses);
+        User u = (User) ses.getAttribute("userLogged");
+        byte[] bytes = img.getBytes();
+        ProductImage p = new ProductImage();
+        String name = getPath() + p.getProductId() + System.currentTimeMillis()+ ".png";
+        p.setImageName(name);
+        File newImage = new File(name);
+        FileOutputStream fos = new FileOutputStream(newImage);
+        fos.write(bytes);
+        fos.close();
+        productImageRepository.saveAndFlush(p);
     }
 
     @GetMapping(value="/images/{name}", produces = "image/png")

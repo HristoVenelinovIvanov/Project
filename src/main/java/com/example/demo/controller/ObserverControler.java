@@ -57,8 +57,9 @@ public class ObserverControler extends BaseController {
                 notifySubscribed(u, eText);
                 counter.getAndIncrement();
                 if (counter.get()%100 == 0){
+                    System.out.println(counter.get());
                     try {
-                        Thread.sleep(5000);//sleeps for 5 min before sending emails again
+                        Thread.sleep(1000*60*5);//sleeps for 5 min before sending emails again
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -71,7 +72,7 @@ public class ObserverControler extends BaseController {
         new Thread(() -> {
             try {
                 MailUtil.sendMail(serverEmailAddress, u.getEmail(),
-                    en.name(), en.toString() + u.getUserId());
+                    en.name(), en.toString());
             } catch (MessagingException e) {
                 //TODO Deal with email not sending AND make the method in transaction
             }

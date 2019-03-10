@@ -11,6 +11,7 @@ import com.example.demo.model.pojo.User;
 import com.example.demo.utility.exceptions.UserExceptions.*;
 import com.example.demo.utility.mail.MailUtil;
 import net.bytebuddy.utility.RandomString;
+import org.apache.log4j.Priority;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +53,7 @@ public class UserController extends BaseController {
                         try {
                             MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", MailUtil.CONFIRM_MESSAGE + u.getUserId());
                         } catch (MessagingException e) {
-                            //TODO Deal with email not sending
+                            log.log(Priority.WARN, e.getMessage(), e);
                         }
                     }).start();
                 }

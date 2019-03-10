@@ -7,10 +7,12 @@ import com.example.demo.model.pojo.Product;
 import com.example.demo.model.pojo.User;
 import com.example.demo.model.repository.OrderRepository;
 import com.example.demo.model.repository.ProductRepository;
+import com.example.demo.model.repository.UserRepository;
 import com.example.demo.utility.exceptions.ProductExceptions.ProductDoesNotExistException;
 import com.example.demo.utility.mail.MailUtil;
 import com.example.demo.utility.ordermessages.OrderMessage;
 import com.github.lambdaexpression.annotation.RequestBodyParam;
+import org.apache.log4j.Priority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +38,8 @@ public class OrderController extends BaseController {
     private OrderedProductsDao orderedProductsDao;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private UserRepository userRepository;
 
     //Ordering only one product
     @RequestMapping(value = "/products/{productId}/order", method = RequestMethod.POST)
@@ -60,7 +64,7 @@ public class OrderController extends BaseController {
                                 "Order confirmation",
                                 MailUtil.ORDER_CONFIRMATION_MESSAGE + order.toString() + productOptional.get().toString());
                     } catch (MessagingException e) {
-                        //TODO Deal with message not sending
+                        log.log(Priority.WARN, e.getMessage(), e);
                     }
                 }).start();
 

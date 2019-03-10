@@ -1,12 +1,10 @@
 package com.example.demo.controller;
 
-import com.example.demo.controller.BaseController;
 import com.example.demo.model.pojo.User;
-import com.example.demo.model.repository.ProductRepository;
 import com.example.demo.model.repository.UserRepository;
 import com.example.demo.utility.exceptions.TechnoMarketException;
 import com.example.demo.utility.mail.MailUtil;
-import com.example.demo.utility.validators.UserValidator;
+import org.apache.log4j.Priority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.model.enums.Notification;
@@ -15,6 +13,7 @@ import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.example.demo.model.enums.Notification.*;
@@ -28,40 +27,52 @@ public class ObserverControler extends BaseController {
 
     static final String serverEmailAddress = "technomarket.project@gmail.com";
 
+    private static final int numberOfNotifiedSubscribers = 100;
+    private static final int timeToWaitUntilNotifyOtherSubscribers = 1000*60*5;
+
     @RequestMapping(value = "/notify", method = RequestMethod.POST)
     public void notify(@RequestBody Notification note, HttpSession session) throws TechnoMarketException {
 
         if (validateAdminLogin(session)) {
+            User u = (User) session.getAttribute("userLogged");
             switch (note) {
                 case DISCOUNT:
-                    sendEmails(DISCOUNT);
+                    sendEmails(DISCOUNT, u.getEmail());
                     break;
                 case BLACK_FRIDAY:
-                    sendEmails(BLACK_FRIDAY);
+                    sendEmails(BLACK_FRIDAY, u.getEmail());
                     break;
                 case CRAZY_DAYS:
-                    sendEmails(CRAZY_DAYS);
+                    sendEmails(CRAZY_DAYS, u.getEmail());
                     break;
                 case CYBER_MONDAY:
-                    sendEmails(CYBER_MONDAY);
+                    sendEmails(CYBER_MONDAY, u.getEmail());
                     break;
             }
         }
     }
 
     @Transactional
-    public synchronized void sendEmails(Enum eText){
+    public synchronized void sendEmails(Enum eText, String email){
         new Thread(() -> {
             AtomicInteger counter = new AtomicInteger(0);
             for (User u : userRepository.findAllBySubscribedEquals()){
                 notifySubscribed(u, eText);
                 counter.getAndIncrement();
-                if (counter.get()%100 == 0){
+                if (counter.get() % numberOfNotifiedSubscribers == 0){
                     System.out.println(counter.get());
                     try {
-                        Thread.sleep(1000*60*5);//sleeps for 5 min before sending emails again
+                        Thread.sleep(timeToWaitUntilNotifyOtherSubscribers);//sleeps for 5 min before sending emails again
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        log.log(Priority.WARN, e.getMessage(), e);
+                        for (User user : userRepository.findAllByUserRoleAdministrator()){
+                            try {
+                                MailUtil.sendMail(serverEmailAddress, user.getEmail(), "Error sedning mails",
+                                        "Emails for subscribing users not send because" + e.getMessage());
+                            } catch (MessagingException e1) {
+                                log.log(Priority.WARN, e1.getMessage(), e1);
+                            }
+                        }
                     }
                 }
             }
@@ -74,7 +85,7 @@ public class ObserverControler extends BaseController {
                 MailUtil.sendMail(serverEmailAddress, u.getEmail(),
                     en.name(), en.toString());
             } catch (MessagingException e) {
-                //TODO Deal with email not sending AND make the method in transaction
+                log.log(Priority.WARN, e.getMessage(), e);
             }
         }).start();
     }

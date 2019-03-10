@@ -13,5 +13,6 @@ public interface UserRepository extends JpaRepository<User, Long>{
     User findByUserId(long userId);
     @Query(value = "SELECT * FROM users where subscribed = 1", nativeQuery = true)
     List<User> findAllBySubscribedEquals();
+    List<User> findAllByUserRoleAdministrator();
 
 }

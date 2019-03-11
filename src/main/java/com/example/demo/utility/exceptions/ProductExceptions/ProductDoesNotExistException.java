@@ -6,6 +6,6 @@ public class ProductDoesNotExistException extends TechnoMarketException {
 
 
     public ProductDoesNotExistException(String msg) {
-        super("No product available, sorry.");
+        super(msg);
     }
 }

@@ -3,13 +3,16 @@ package com.example.demo.controller;
 import com.example.demo.model.dao.UserDao;
 import com.example.demo.model.dao.ProductCategoryDao;
 import com.example.demo.model.pojo.Category;
+import com.example.demo.model.pojo.Order;
 import com.example.demo.model.repository.CategoryRepository;
+import com.example.demo.utility.exceptions.OrderExceptions.NoOrdersAvailableException;
 import com.example.demo.utility.exceptions.ProductExceptions.CategoryAlreadyExistsException;
 import com.example.demo.utility.exceptions.TechnoMarketException;
 import com.example.demo.model.repository.UserRepository;
 import com.example.demo.model.pojo.User;
 import com.example.demo.utility.exceptions.UserExceptions.*;
 import com.example.demo.utility.mail.MailUtil;
+import com.github.lambdaexpression.annotation.RequestBodyParam;
 import net.bytebuddy.utility.RandomString;
 import org.apache.log4j.Priority;
 import org.mindrot.jbcrypt.BCrypt;
@@ -18,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -34,24 +36,17 @@ public class UserController extends BaseController {
     @Autowired
     private ProductCategoryDao productCategoryDao;
 
-    public String getPath(){
-        String path = "C:" + File.separator + "Users" + File.separator +
-                "Prod" + File.separator + "Desktop" + File.separator + "images" + File.separator;
-        return path;
-    }
-
     //Register form
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public void registerUser(@RequestBody User u, HttpServletResponse response) throws Exception {
 
-        if (userValidator.validateEmptyFields(u)) {
-                if (userRepository.findByEmail(u.getEmail()) == null) {
+        if (userValidator.validateEmptyFields(u) && userRepository.findByEmail(u.getEmail()) == null) {
                     u.setPassword(BCrypt.hashpw(u.getPassword(), BCrypt.gensalt()));
                     userRepository.save(u);
 
                     new Thread(() -> {
                         try {
-                            MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", MailUtil.CONFIRM_MESSAGE + u.getUserId());
+                            MailUtil.sendMail(serverEmailAddress, u.getEmail(), "Account verification", MailUtil.USERS_VERIFY_MESSAGE + u.getUserId());
                         } catch (MessagingException e) {
                             log.log(Priority.WARN, e.getMessage(), e);
                         }
@@ -60,20 +55,19 @@ public class UserController extends BaseController {
                 else {
                     throw new UserAlreadyExistsException();
                 }
-        }
         response.getWriter().append("You have been registered successfully, please verify your account by entering your email address.");
-    }
+        }
+  //  }
 
     //Verifying user after registration
     @RequestMapping(value = "/users/verify/{userId}", method = RequestMethod.GET)
     public void verifyUser(@PathVariable("userId") long userId, HttpServletResponse response) throws Exception{
 
-        if (userRepository.existsById(userId)) {
-
-            User user = userRepository.findByUserId(userId);
-            if (user.getVerified() != User.IS_USER_VERIFIED) {
-                user.setVerified(1);
-                userRepository.saveAndFlush(user);
+        Optional<User> userOptional = Optional.ofNullable(userRepository.findByUserId(userId));
+        if (userOptional.isPresent()) {
+            if (userOptional.get().getVerified() != User.IS_USER_VERIFIED) {
+                userOptional.get().setVerified(1);
+                userRepository.saveAndFlush(userOptional.get());
                 response.getWriter().append("You have successfully verified your account! \nRedirecting to the login page in 5 seconds...");
                 response.setHeader("Refresh", "5; URL=http://localhost:1337/products");
             }
@@ -88,7 +82,7 @@ public class UserController extends BaseController {
 
     //Shows all users
     @RequestMapping (value = "/users", method = RequestMethod.GET)
-    public List<User> showAllUsers(HttpSession session, HttpServletResponse response) throws TechnoMarketException, IOException {
+    public List<User> showAllUsers(HttpSession session) throws TechnoMarketException, IOException {
 
         validateAdminLogin(session);
         List<User> users = userRepository.findAll();
@@ -144,46 +138,65 @@ public class UserController extends BaseController {
     }
 
     //Forgotten password
-    @RequestMapping(value = "/login/forgottenPassword/{email}", method = RequestMethod.GET)
-    public void forgottenPassword(@PathVariable("email") String email, HttpServletResponse response) throws Exception {
+    @RequestMapping(value = "/login/forgottenPassword", method = RequestMethod.POST)
+    public void forgottenPassword(@RequestBodyParam String email, HttpServletResponse response) throws Exception {
+
+        Optional<User> optionalUser = Optional.ofNullable(userRepository.findByEmail(email));
 
         //If user exists
-        if (userDao.getUserId(email) > 0) {
+        if (optionalUser.isPresent()) {
 
-            String randomPassword = RandomString.make(8);
-            MailUtil.sendMail(serverEmailAddress, email, "Reset password", MailUtil.FORGOTTEN_PASSWORD +     randomPassword);
-            userValidator.validatePassword(randomPassword);
+            String randomPassword = RandomString.make(10);
+            MailUtil.sendMail(serverEmailAddress, email, "Forgotten password", MailUtil.FORGOTTEN_PASSWORD_FIRST_PART +
+                    MailUtil.NEW_FORGOTTEN_PASSWORD +
+                    randomPassword +
+                    MailUtil.FORGOTTEN_PASSWORD_LINK + optionalUser.get().getUserId() + MailUtil.RESET_PASSWORD_URL +
+                    randomPassword +
+                    MailUtil.FORGOTTEN_PASSWORD_SECOND_PART);
 
-            User user = userRepository.findByEmail(email);
-
-            if (user != null) {
-                user.setPassword(BCrypt.hashpw(randomPassword, BCrypt.gensalt()));
-                userRepository.saveAndFlush(user);
-            }
             response.getWriter().append("An Email with your new password has been sent, please check your email.");
         }
         else {
             throw new UserNotFoundException();
         }
+    }
 
+    @RequestMapping(value = "/users/{userId}/resetPassword/{newPassword}", method = RequestMethod.GET)
+    public void resetPassword(@PathVariable("userId") long userId, @PathVariable("newPassword") String newPassword, HttpServletResponse response) throws Exception {
+
+        Optional<User> userOptional = Optional.ofNullable(userRepository.findByUserId(userId));
+
+        if(userOptional.isPresent()) {
+            userOptional.get().setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt()));
+            userRepository.saveAndFlush(userOptional.get());
+            response.getWriter().append("Your password has been reset successfully.");
+        }
+        else {
+            throw new UserNotFoundException();
+        }
     }
 
 
-    @RequestMapping(value = "/users/delete/{userId}", method = RequestMethod.POST)
-    public String deleteUser(@PathVariable("userId") long userId, HttpSession session, HttpServletResponse response) throws TechnoMarketException, IOException {
+    //Deletes a user only if the id is different than the logged user
+    @RequestMapping(value = "/users/{userId}/delete", method = RequestMethod.DELETE)
+    public void deleteUser(@PathVariable("userId") long userId, HttpSession session, HttpServletResponse response) throws TechnoMarketException, IOException {
 
         validateAdminLogin(session);
 
-            if (userRepository.existsById(userId)) {
-                userRepository.delete(userRepository.findByUserId(userId));
-                response.getWriter().append("User with ID " + userId + " deleted successfully!");
-            }
+        if(userId == (Long) session.getAttribute("userId")) {
+            response.getWriter().append("Why would you want to delete yourself?\nP.S You can't :)");
+            return;
+        }
 
+        if (userRepository.existsById(userId)) {
+            userRepository.delete(userRepository.findByUserId(userId));
+            response.getWriter().append("User with ID " + userId + " deleted successfully!");
+            return;
+        }
         throw new UserNotFoundException();
     }
 
     //Edits user profile
-    //Not working
     @RequestMapping(value = "/users/edit", method = RequestMethod.POST)
     public String editUser(@RequestBody User u, HttpSession session) throws TechnoMarketException {
         validateLogin(session);
@@ -207,6 +220,20 @@ public class UserController extends BaseController {
         else {
             throw new CategoryAlreadyExistsException();
         }
+    }
+
+    //Views order for the logged user
+    @RequestMapping(value = "/profile/orders", method = RequestMethod.GET)
+    public List<Order> viewOrders(HttpSession session) throws TechnoMarketException {
+        validateLogin(session);
+
+        User user = (User) session.getAttribute("userLogged");
+
+        if (!user.getOrders().isEmpty()) {
+            return user.getOrders();
+
+        }
+        throw new NoOrdersAvailableException();
     }
 
 }

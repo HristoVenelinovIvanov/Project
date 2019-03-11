@@ -33,8 +33,6 @@ public class User {
     private long userRoleId = 1;
     @Column(name = "gender")
     private Gender gender;
-    @Column(name = "image")
-    private String imageUrl;
     @Column(name = "verified")
     private int verified = 0;
     @Column(name = "subscribed")
@@ -49,6 +47,15 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
     private List<Product> favorites = new ArrayList<>();
+    @ManyToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
+    @JoinTable(name = "user_orders",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "order_id")
+    )
+    private List<Order> orders = new ArrayList<>();
 
 
 }

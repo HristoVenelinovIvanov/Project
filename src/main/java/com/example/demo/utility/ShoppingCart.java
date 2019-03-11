@@ -20,6 +20,8 @@ import java.util.Map;
 @NoArgsConstructor
 public class ShoppingCart {
 
+    public static final String ORDER_NOT_CONFIRMED = "Order is not confirmed yet";
+
     private List<Product> shoppingCart = new ArrayList<>();
     private double orderTotal;
 
@@ -42,7 +44,8 @@ public class ShoppingCart {
 
     public void removeProductFromCart(int index, HttpServletResponse response) throws IOException, ProductDoesNotExistException {
 
-        if (index > shoppingCart.size()) {
+        index--;
+        if (index >= shoppingCart.size()) {
             throw new ProductDoesNotExistException("You are trying to access an index that is out of bounds of the shopping cart!");
         }
 
@@ -68,7 +71,7 @@ public class ShoppingCart {
 
         return shoppingCart.add(product) ? "Product " +
                                             product.getProductName() + " with ID " +
-                                            product.getProductId() + " has been added to the basket" :
+                                            product.getProductId() + " has been added to the basket." :
                                             "Sorry, item could not be added to the basket";
     }
 
@@ -78,7 +81,7 @@ public class ShoppingCart {
         for (Product p : shoppingCart) {
             this.orderTotal += p.getPrice();
         }
-        return "You have " + shoppingCart.size() + " in the basket, the total sum is: " + orderTotal;
+        return shoppingCart.size() + " Products, totaling price is: " + orderTotal + "£";
     }
 
 

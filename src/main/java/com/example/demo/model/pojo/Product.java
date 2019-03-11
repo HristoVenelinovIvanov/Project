@@ -16,58 +16,48 @@ public class Product {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     @Column(name = "product_id")
-    private long productId;
+    private Long productId;
     @Column(name = "product_name")
     private String productName;
     @Column(name = "price")
-    private double price;
+    private Double price;
     @Column(name = "quantity")
-    private long quantity;
+    private Long quantity = 0L;
 
     //Quantity on order is the quantity that is *NOT* available
     //E.G Ordered by a user OR marked DAMAGED/NOT FOR SALE
 
     @Column(name = "quantity_on_order")
-    private long quantityOnOrder;
+    private Long quantityOnOrder = 0L;
     @Column(name = "category_id")
-    private long categoryId;
+    private Long categoryId = 1L;
     @Column(name = "discounted")
-    private double discounted;
-    @Column(name = "product_image")
-    private String productImage;
+    private Double discounted;
     @Column(name = "brand")
     private String brand;
     @Column(name = "inches")
-    private double inches;
+    private Double inches;
     @Column(name = "frequency")
-    private long frequency;
+    private Long frequency;
     @Column(name = "kw")
-    private long kw;
+    private Long kw;
     @Column(name = "number_of_hobs")
-    private long numberOfHobs;
+    private Long numberOfHobs;
     @Column(name = "timer")
-    private long timer;
+    private Long timer;
     @Column(name = "camera_pixels")
-    private double cameraPixels;
+    private Double cameraPixels;
     @Column(name = "finger_print")
-    private long fingerPrint;
+    private Long fingerPrint;
     @Column(name = "water_proof")
-    private long waterProof;
+    private Long waterProof;
     @Column(name = "kg_capacity")
-    private long kgCapacity;
+    private Long kgCapacity;
     @Column(name = "intelligent_wash")
-    private long intelligentWash;
+    private Long intelligentWash;
     @Column(name = "inbuild_dryer")
-    private long inbuildDryer;
+    private Long inbuildDryer;
 
-//    @OneToOne(cascade = {
-//            CascadeType.PERSIST,
-//            CascadeType.MERGE
-//    })
-//    @JoinTable(name = "products_images",
-//            joinColumns = @JoinColumn(name = "product_id"),
-//            inverseJoinColumns = @JoinColumn(name = "product_id")
-//    )
 
     @Override
     public boolean equals(Object o) {
@@ -76,44 +66,19 @@ public class Product {
         Product product = (Product) o;
         return productId == product.productId &&
                 Double.compare(product.price, price) == 0 &&
-                quantity == product.quantity &&
-                quantityOnOrder == product.quantityOnOrder &&
                 categoryId == product.categoryId &&
-                discounted == product.discounted &&
-                Objects.equals(productName, product.productName) &&
-                Objects.equals(productImage, product.productImage);
+                Double.compare(product.discounted, discounted) == 0 &&
+                Objects.equals(productName, product.productName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(productId, productName, price,
-                quantity, quantityOnOrder, categoryId, discounted, productImage);
+        return Objects.hash(productId, productName, price, categoryId, discounted);
     }
 
     @Override
     public String toString() {
-        return "Product{" +
-                "productId=" + productId +
-                ", productName='" + productName + '\'' +
-                ", price=" + price +
-                ", quantity=" + quantity +
-                ", quantityOnOrder=" + quantityOnOrder +
-                ", categoryId=" + categoryId +
-                ", discounted=" + discounted +
-                ", productImage='" + productImage + '\'' +
-                ", brand='" + brand + '\'' +
-                ", inches=" + inches +
-                ", frequency=" + frequency +
-                ", kw=" + kw +
-                ", numberOfHobs=" + numberOfHobs +
-                ", timer=" + timer +
-                ", cameraPixels=" + cameraPixels +
-                ", fingerPrint=" + fingerPrint +
-                ", waterProof=" + waterProof +
-                ", kgCapacity=" + kgCapacity +
-                ", intelligentWash=" + intelligentWash +
-                ", inbuildDryer=" + inbuildDryer +
-                '}';
+        return "\n\n Product: " + productName + "\n Price: " + price + "\n";
     }
 
 }

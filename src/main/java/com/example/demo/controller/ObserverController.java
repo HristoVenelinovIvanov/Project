@@ -8,67 +8,62 @@ import org.apache.log4j.Priority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.model.enums.Notification;
-
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
-
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import static com.example.demo.model.enums.Notification.*;
 
-
 @RestController
-public class ObserverControler extends BaseController {
+public class ObserverController extends BaseController {
 
     @Autowired
     private UserRepository userRepository;
 
-    static final String serverEmailAddress = "technomarket.project@gmail.com";
-
     private static final int numberOfNotifiedSubscribers = 100;
-    private static final int timeToWaitUntilNotifyOtherSubscribers = 1000*60*5;
+    private static final int timeToWaitUntilNotifyOtherSubscribers = 1000*60*5; // Sleep for 5 minutes.
 
-    @RequestMapping(value = "/notify", method = RequestMethod.POST)
-    public void notify(@RequestBody Notification note, HttpSession session) throws TechnoMarketException {
+    @RequestMapping(value = "/notify/{note}", method = RequestMethod.GET)
+    public void notify(@PathVariable Notification note, HttpSession session, HttpServletResponse response) throws TechnoMarketException, IOException {
 
         if (validateAdminLogin(session)) {
-            User u = (User) session.getAttribute("userLogged");
+
             switch (note) {
                 case DISCOUNT:
-                    sendEmails(DISCOUNT, u.getEmail());
+                    sendEmails(DISCOUNT);
                     break;
                 case BLACK_FRIDAY:
-                    sendEmails(BLACK_FRIDAY, u.getEmail());
+                    sendEmails(BLACK_FRIDAY);
                     break;
                 case CRAZY_DAYS:
-                    sendEmails(CRAZY_DAYS, u.getEmail());
+                    sendEmails(CRAZY_DAYS);
                     break;
                 case CYBER_MONDAY:
-                    sendEmails(CYBER_MONDAY, u.getEmail());
+                    sendEmails(CYBER_MONDAY);
                     break;
             }
+            response.getWriter().append("Users notified for " + note.name());
         }
     }
 
     @Transactional
-    public synchronized void sendEmails(Enum eText, String email){
+    public synchronized void sendEmails(Enum eText){
         new Thread(() -> {
             AtomicInteger counter = new AtomicInteger(0);
-            for (User u : userRepository.findAllBySubscribedEquals()){
+            for (User u : userRepository.findAllBySubscribed()){
                 notifySubscribed(u, eText);
                 counter.getAndIncrement();
                 if (counter.get() % numberOfNotifiedSubscribers == 0){
-                    System.out.println(counter.get());
                     try {
                         Thread.sleep(timeToWaitUntilNotifyOtherSubscribers);//sleeps for 5 min before sending emails again
                     } catch (InterruptedException e) {
                         log.log(Priority.WARN, e.getMessage(), e);
                         for (User user : userRepository.findAllByUserRoleAdministrator()){
                             try {
-                                MailUtil.sendMail(serverEmailAddress, user.getEmail(), "Error sedning mails",
-                                        "Emails for subscribing users not send because" + e.getMessage());
+                                MailUtil.sendMail(serverEmailAddress, user.getEmail(), "Error sending mails",
+                                        "Emails for subscribing users not sent because, " + e.getMessage());
                             } catch (MessagingException e1) {
                                 log.log(Priority.WARN, e1.getMessage(), e1);
                             }
@@ -78,6 +73,7 @@ public class ObserverControler extends BaseController {
             }
         }).start();
     }
+
 
     public void notifySubscribed(User u, Enum en){
         new Thread(() -> {

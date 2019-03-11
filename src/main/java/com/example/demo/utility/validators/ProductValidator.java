@@ -6,6 +6,9 @@ import com.example.demo.utility.exceptions.ProductExceptions.*;
 import com.example.demo.utility.exceptions.TechnoMarketException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,17 +32,11 @@ public class ProductValidator {
         if (product.getCategoryId() <= 0 || productCategoryDao.categoryExists(product.getCategoryId())) {
             throw new CategoryNotFoundException();
         }
-        if (product.getQuantityOnOrder() < 0) {
-            throw new QuantityNotValidException("Cannot be ordered more than the quantity we have");
-        }
-        if (product.getDiscounted() < 0) {
-            throw new InvalidDiscountPriceException("Invalid discount price entered");
-        }
 
         return true;
     }
 
-    public synchronized TreeMap<Integer, Product> editProduct(Product oldProduct, Product newProduct) {
+    public HashMap<Integer, Product> editProduct(Product oldProduct, Product newProduct) {
 
         AtomicInteger fieldsChanged = new AtomicInteger(0);
 
@@ -47,7 +44,7 @@ public class ProductValidator {
                 oldProduct.setProductName(newProduct.getProductName());
                 fieldsChanged.getAndIncrement();
             }
-            if (newProduct.getCategoryId() > 0 && !productCategoryDao.categoryExists(newProduct.getCategoryId())) {
+            if (newProduct.getCategoryId() > 1 && !productCategoryDao.categoryExists(newProduct.getCategoryId())) {
                 oldProduct.setCategoryId(newProduct.getCategoryId());
                 fieldsChanged.getAndIncrement();
             }
@@ -63,15 +60,8 @@ public class ProductValidator {
                 oldProduct.setDiscounted(newProduct.getDiscounted());
                 fieldsChanged.getAndIncrement();
             }
-
-            //TODO make it possible to edit characteristics
-
-            if (newProduct.getProductImage() != null) {
-                oldProduct.setProductImage(newProduct.getProductImage());
-                fieldsChanged.getAndIncrement();
-            }
-
-            TreeMap<Integer, Product> mapped = new TreeMap<>();
+            //TODO Add the other fields as editable
+            HashMap<Integer, Product> mapped = new HashMap<>();
             mapped.put(fieldsChanged.intValue(), oldProduct);
 
             return mapped;

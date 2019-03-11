@@ -31,4 +31,6 @@ public class UserFavoritesDao {
         return jdbcTemplate.queryForObject(sql, new Object[] {userId, productId}, int.class) > 0;
     }
 
+
+
 }

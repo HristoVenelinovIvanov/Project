@@ -22,10 +22,10 @@ public class UserValidator {
             throw new InvalidCredentinalsException("Invalid credentials");
         }
         if (user.getFirstName().isEmpty() || user.getFirstName() == null || user.getFirstName().contains(" ")) {
-            throw new InvalidCredentinalsException("First name field must not be empty!");
+            throw new InvalidCredentinalsException("First name field is empty or is containing intervals!");
         }
         if (user.getLastName().isEmpty() || user.getLastName() == null || user.getLastName().contains(" ")) {
-            throw new InvalidCredentinalsException("Last name field must not be empty!");
+            throw new InvalidCredentinalsException("Last name field is empty or is containing intervals!");
         }
         if (user.getPassword().isEmpty() || user.getPassword() == null ||
                 user.getPassword().length() < 6 || user.getPassword().contains(" ")) {
@@ -56,14 +56,6 @@ public class UserValidator {
             }
         }
         throw new UserNotFoundException();
-    }
-
-    public boolean validatePassword(String password) throws TechnoMarketException {
-
-        if (password.isEmpty() || password == null || password.length() < 6 || password.contains(" ")) {
-            throw new PasswordTooShortException();
-        }
-        return true;
     }
 
 }

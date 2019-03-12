@@ -48,7 +48,6 @@ public class ObserverController extends BaseController {
         }
     }
 
-    @Transactional
     public synchronized void sendEmails(Enum eText){
         new Thread(() -> {
             AtomicInteger counter = new AtomicInteger(0);

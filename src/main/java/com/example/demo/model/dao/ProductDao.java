@@ -125,6 +125,7 @@ public class ProductDao {
             where.append(" inbuild_dryer =").append(inbuildDryer).append(" AND ");
         }
 
+        //TODO
         StringBuffer sql = new StringBuffer();
         select.setLength(select.length() - DELETE_COMMA);
         where.setLength(where.length() - DELETE_WHERE_CLAUSE);

@@ -17,6 +17,7 @@ import org.apache.log4j.Priority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -84,6 +85,12 @@ public abstract class BaseController {
     @ResponseStatus(value = HttpStatus.OK)
     protected ErrorMsg handleNoUserFavorites(Exception e) {
         return new ErrorMsg(e.getMessage(), HttpStatus.OK.value(), LocalDateTime.now());
+    }
+
+    @ExceptionHandler({BadSqlGrammarException.class})
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    protected ErrorMsg handleBadRequest() {
+        return new ErrorMsg("Incorrect input!", HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
     }
 
     protected boolean validateLogin(HttpSession session) throws NotLoggedException{

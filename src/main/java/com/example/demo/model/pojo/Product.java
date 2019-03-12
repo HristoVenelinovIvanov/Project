@@ -58,22 +58,33 @@ public class Product {
     @Column(name = "inbuild_dryer")
     private Long inbuildDryer;
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Product)) return false;
         Product product = (Product) o;
-        return productId == product.productId &&
-                Double.compare(product.price, price) == 0 &&
-                categoryId == product.categoryId &&
-                Double.compare(product.discounted, discounted) == 0 &&
-                Objects.equals(productName, product.productName);
+        return Objects.equals(productId, product.productId) &&
+                Objects.equals(productName, product.productName) &&
+                Objects.equals(price, product.price) &&
+                Objects.equals(categoryId, product.categoryId) &&
+                Objects.equals(discounted, product.discounted) &&
+                Objects.equals(brand, product.brand) &&
+                Objects.equals(inches, product.inches) &&
+                Objects.equals(frequency, product.frequency) &&
+                Objects.equals(kw, product.kw) &&
+                Objects.equals(numberOfHobs, product.numberOfHobs) &&
+                Objects.equals(timer, product.timer) &&
+                Objects.equals(cameraPixels, product.cameraPixels) &&
+                Objects.equals(fingerPrint, product.fingerPrint) &&
+                Objects.equals(waterProof, product.waterProof) &&
+                Objects.equals(kgCapacity, product.kgCapacity) &&
+                Objects.equals(intelligentWash, product.intelligentWash) &&
+                Objects.equals(inbuildDryer, product.inbuildDryer);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(productId, productName, price, categoryId, discounted);
+        return Objects.hash(productId, productName, price, categoryId, discounted, brand, inches, frequency, kw, numberOfHobs, timer, cameraPixels, fingerPrint, waterProof, kgCapacity, intelligentWash, inbuildDryer);
     }
 
     @Override

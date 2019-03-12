@@ -137,10 +137,12 @@ public class ProductController extends BaseController{
             @RequestParam(value = "water_proof", required = false) String waterProof,
             @RequestParam(value = "kg_capacity", required = false) String kgCapacity,
             @RequestParam(value = "intelligent_wash", required = false) String intelligentWash,
-            @RequestParam(value = "inbuild_dryer", required = false) String inbuildDryer) {
+            @RequestParam(value = "inbuild_dryer", required = false) String inbuildDryer,
+            @RequestParam(value = "lowerThan", required = false) String lowerThan,
+            @RequestParam(value = "higherThan", required = false) String higherThan) {
 
         return productDao.filterProducts(productName, price, discounted, brand, inches, frequency, kw, numberOfHobs,timer,
-                cameraPixels, fingerPrint, waterProof, kgCapacity, intelligentWash, inbuildDryer);
+                cameraPixels, fingerPrint, waterProof, kgCapacity, intelligentWash, inbuildDryer, lowerThan, higherThan);
     }
 
     @RequestMapping(value = "/products/{productId}/addImage/{imageId}", method = RequestMethod.GET)

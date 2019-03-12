@@ -41,7 +41,6 @@ public class ProductDao {
     }
 
 
-
     public void orderDecreaseQuantity(long quantity, Product product) {
 
             product.setQuantity(product.getQuantity() - quantity);
@@ -55,7 +54,7 @@ public class ProductDao {
                                                     String brand, String inches, String frequency, String kw,
                                                     String numberOfHobs, String timer, String cameraPixels,
                                                     String fingerPrint, String waterProof, String kgCapacity,
-                                                    String intelligentWash, String inbuildDryer){
+                                                    String intelligentWash, String inbuildDryer, String lowerThan, String higherThan){
 
         StringBuffer select = new StringBuffer("SELECT *  ");
         StringBuffer from = new StringBuffer("FROM test1339.products ");
@@ -66,6 +65,12 @@ public class ProductDao {
         }
         if (price != null && !price.isEmpty()) {
             where.append(" price =").append(price).append(" AND ");
+        }
+        if (lowerThan != null && !lowerThan.isEmpty()) {
+            where.append(" price <").append(lowerThan).append(" AND ");
+        }
+        if (higherThan != null && !higherThan.isEmpty()) {
+            where.append(" price >").append(higherThan).append(" AND ");
         }
         if (discounted != null && !discounted.isEmpty()) {
 //            select.append("discounted ,");

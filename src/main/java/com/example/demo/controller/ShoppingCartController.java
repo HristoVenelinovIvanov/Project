@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 public class ShoppingCartController extends BaseController{
@@ -65,7 +66,6 @@ public class ShoppingCartController extends BaseController{
         if (optionalProduct.isPresent()) {
             if (productDao.checkQuantity(optionalProduct.get().getProductId()) >= 1) {
                 Product product = productRepository.findByProductId(productId);
-                productDao.orderDecreaseQuantity(1, product);
                 response.getWriter().append(shoppingCart.addProductToCart(product));
                 return;
             }
@@ -111,7 +111,13 @@ public class ShoppingCartController extends BaseController{
             }
 
             for (Map.Entry<Product, Integer> entry : productAndQuantity.entrySet()) {
-                orderedProductsDao.addToOrdered(order.getOrderId(), entry.getKey().getProductId(), entry.getValue());
+                if (productDao.checkQuantity(entry.getKey().getProductId()) >= entry.getValue()) {
+                    orderedProductsDao.addToOrdered(order.getOrderId(), entry.getKey().getProductId(), entry.getValue());
+                    productDao.orderDecreaseQuantity(entry.getValue(), entry.getKey());
+                }
+                else {
+                    throw new ProductDoesNotExistException("Order cannot be fulfilled, the product: " + entry.getKey().getProductName() + " is out of stock.");
+                }
             }
             userOrdersDao.addToUserOrders(order.getOrderId(), user.getUserId());
             response.getWriter().append(OrderMessage.notConfirmedOrderMessage(order, user.getEmail()));

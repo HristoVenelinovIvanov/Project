@@ -19,6 +19,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -198,14 +199,10 @@ public class UserController extends BaseController {
 
     //Edits user profile
     @RequestMapping(value = "/users/edit", method = RequestMethod.POST)
-    public String editUser(@RequestBody User u, HttpSession session) throws TechnoMarketException {
+    public String editUser(@RequestBodyParam String password, HttpSession session) throws TechnoMarketException {
         validateLogin(session);
 
-            if (userValidator.validateEmptyFields(u)) {
-                userRepository.saveAndFlush(u);
-                return "Profile edited successfully!";
-            }
-            throw new TechnoMarketException("Oops, something went wrong on our side :(");
+        return userValidator.editProfile((User) session.getAttribute("userLogged"), password);
     }
 
     //Adds a category to the DB
@@ -234,6 +231,26 @@ public class UserController extends BaseController {
 
         }
         throw new NoOrdersAvailableException();
+    }
+
+    @RequestMapping(value = "/profile/subscribe", method = RequestMethod.GET)
+    public void subscribe(HttpSession session, HttpServletResponse response) throws TechnoMarketException, IOException {
+        validateLogin(session);
+
+        User user = (User) session.getAttribute("userLogged");
+        user.setSubscribed(1);
+        userRepository.saveAndFlush(user);
+        response.getWriter().append("You have now subscribed to our website.");
+    }
+
+    @RequestMapping(value = "/profile/unSubscribe", method = RequestMethod.GET)
+    public void unSubscribe(HttpSession session, HttpServletResponse response) throws TechnoMarketException, IOException {
+        validateLogin(session);
+
+        User user = (User) session.getAttribute("userLogged");
+        user.setSubscribed(0);
+        userRepository.saveAndFlush(user);
+        response.getWriter().append("You have now unsubscribed from our website.");
     }
 
 }

@@ -11,7 +11,7 @@ public abstract class OrderMessage {
     public static String orderMessage(Order order, String email) {
 
         return "Your order number is #" + order.getOrderId()
-                + "\nYou'll receive an email confirmation shortly to "
+                + "\nYou'll receive an email confirmation shortly to: "
                 + email + " \nDate ordered: ("
                 + LocalDateTime.now().toString()
                 + ")\nDate expected : (" + order.getRequiredDate()
@@ -28,7 +28,8 @@ public abstract class OrderMessage {
                 + "\nE-mail: " + email
                 + "\nStatus: Not confirmed"
                 + " \nDate : (" + LocalDateTime.now().toString()
-                + ")\nDate expected if ordered until midnight: (" + LocalDate.now().plus(4, ChronoUnit.DAYS).toString() + ")";
+                + ")\nDate expected if ordered until midnight: (" + LocalDate.now().plus(4, ChronoUnit.DAYS).toString() + ")" +
+                "\n\nPlease confirm your order!";
     }
 
 }

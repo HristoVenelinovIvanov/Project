@@ -44,7 +44,6 @@ public class ShoppingCart {
 
     public void removeProductFromCart(int index, HttpServletResponse response) throws IOException, ProductDoesNotExistException {
 
-        index--;
         if (index >= shoppingCart.size()) {
             throw new ProductDoesNotExistException("You are trying to access an index that is out of bounds of the shopping cart!");
         }
@@ -52,11 +51,11 @@ public class ShoppingCart {
         if (index > 0) {
             if (shoppingCart.size() == 1) {
                 shoppingCart.remove(0);
-                response.getWriter().append("Product successfully removed from the basket");
+                response.getWriter().append("Product successfully removed from the basket.");
             }
             else {
                 if (shoppingCart.remove(index) != null) {
-                    response.getWriter().append("Product successfully removed from the basket");
+                    response.getWriter().append("Product successfully removed from the basket.");
                 } else {
                     response.getWriter().append("There is no such product in the basket!");
                 }
@@ -72,7 +71,7 @@ public class ShoppingCart {
         return shoppingCart.add(product) ? "Product " +
                                             product.getProductName() + " with ID " +
                                             product.getProductId() + " has been added to the basket." :
-                                            "Sorry, item could not be added to the basket";
+                                            "Sorry, item could not be added to the basket.";
     }
 
     public String calculateTotalPrice() {
@@ -81,7 +80,7 @@ public class ShoppingCart {
         for (Product p : shoppingCart) {
             this.orderTotal += p.getPrice();
         }
-        return shoppingCart.size() + " Products, totaling price is: " + orderTotal + "£";
+        return shoppingCart.size() + " Products, totaling price is: " + orderTotal + "лв.";
     }
 
 

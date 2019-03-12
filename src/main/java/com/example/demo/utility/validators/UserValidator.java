@@ -7,8 +7,12 @@ import com.example.demo.utility.exceptions.UserExceptions.UserNotFoundException;
 import com.example.demo.utility.exceptions.ValidationExceptions.EmailNotValidException;
 import com.example.demo.utility.exceptions.ValidationExceptions.InvalidCredentinalsException;
 import com.example.demo.utility.exceptions.ValidationExceptions.PasswordTooShortException;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class UserValidator {
@@ -58,4 +62,14 @@ public class UserValidator {
         throw new UserNotFoundException();
     }
 
+    public String editProfile(User user, String newPassword) throws TechnoMarketException {
+
+        if (!(newPassword.isEmpty() && newPassword == null && newPassword.contains(" ")) && newPassword.length() > 6) {
+            user.setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt()));
+            userRepository.saveAndFlush(user);
+            return "You have changed your password successfully!";
+        }
+
+        throw new PasswordTooShortException();
+    }
 }

@@ -89,7 +89,6 @@ public class OrderController extends BaseController {
         }
 
         if (!user.getOrders().isEmpty() && orderRepository.existsById(orderId)) {
-
             for (Order order : user.getOrders()) {
                 if (order.getOrderId() == orderId && order.getStatus().contentEquals(Order.IS_ORDER_CONFIRMED)) {
                     order.setAddress(address);
@@ -101,6 +100,7 @@ public class OrderController extends BaseController {
                     List<Map<String, Object>> products = userOrdersDao.getProductsForOrder(orderId);
                     StringBuilder productInformation = new StringBuilder();
 
+                    //Adding product information(product toString) to the StringBuilder then sending the whole text in the email.
                     for (Map<String, Object> p : products) {
                         for (Map.Entry<String, Object> entry : p.entrySet()) {
                             productInformation.append(productRepository.getOne(Long.valueOf((Integer) entry.getValue())).toString());

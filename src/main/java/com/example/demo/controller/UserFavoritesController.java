@@ -83,7 +83,7 @@ public class UserFavoritesController extends BaseController {
                 } else {
                     if (productDao.productExists(productId)) {
                         userFavoritesDao.removeFromFavorites(optionalUser.get().getUserId(), productId);
-                        response.getWriter().append("Product ID: " + productId + " has been removed from your favorites");
+                        response.getWriter().append("Product ID: " + productId + " has been removed from your favorites.");
                         return;
                     } else {
                         throw new ProductDoesNotExistException("The product does not exist, sorry :(");
@@ -92,4 +92,6 @@ public class UserFavoritesController extends BaseController {
             }
         }
     }
+
+
 }

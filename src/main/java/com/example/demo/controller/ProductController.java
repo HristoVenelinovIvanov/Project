@@ -3,7 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.model.dao.ProductDao;
 import com.example.demo.model.dao.ProductCategoryDao;
 import com.example.demo.model.pojo.Product;
-import com.example.demo.model.repository.ImageRepository;
+import com.example.demo.model.repository.ProductImageRepository;
 import com.example.demo.model.repository.ProductRepository;
 import com.example.demo.utility.exceptions.ProductExceptions.ProductDoesNotExistException;
 import com.example.demo.utility.exceptions.TechnoMarketException;
@@ -31,7 +31,7 @@ public class ProductController extends BaseController{
     @Autowired
     private ProductCategoryDao productCategoryDao;
     @Autowired
-    private ImageRepository imageRepository;
+    private ProductImageRepository imageRepository;
 
     //Displaying all products
     @RequestMapping(value = "/products", method = RequestMethod.GET)
@@ -138,11 +138,30 @@ public class ProductController extends BaseController{
             @RequestParam(value = "kg_capacity", required = false) String kgCapacity,
             @RequestParam(value = "intelligent_wash", required = false) String intelligentWash,
             @RequestParam(value = "inbuild_dryer", required = false) String inbuildDryer,
-            @RequestParam(value = "lowerThan", required = false) String lowerThan,
-            @RequestParam(value = "higherThan", required = false) String higherThan) {
+            @RequestParam(value = "lower_then", required = false) String lowerThen,
+            @RequestParam(value = "higher_then", required = false) String higherThen) {
 
-        return productDao.filterProducts(productName, price, discounted, brand, inches, frequency, kw, numberOfHobs,timer,
-                cameraPixels, fingerPrint, waterProof, kgCapacity, intelligentWash, inbuildDryer, lowerThan, higherThan);
+        Map<String, String> list = new HashMap<>();
+        Map<String, String> lowerHigherThen = new HashMap<>();
+        list.put("product_name", productName);
+        list.put("price", price);
+        list.put("discounted", discounted);
+        list.put("brand", brand);
+        list.put("inches", inches);
+        list.put("frequency", frequency);
+        list.put("kw", kw);
+        list.put("number_of_hobs", numberOfHobs);
+        list.put("timer", timer);
+        list.put("camera_pixels", cameraPixels);
+        list.put("finger_print", fingerPrint);
+        list.put("water_proof", waterProof);
+        list.put("kg_capacity", kgCapacity);
+        list.put("intelligent_wash", intelligentWash);
+        list.put("inbuild_dryer", inbuildDryer);
+        lowerHigherThen.put("lower", lowerThen);
+        lowerHigherThen.put("higher", higherThen);
+
+        return productDao.filterProducts(list, lowerHigherThen);
     }
 
     @RequestMapping(value = "/products/{productId}/addImage/{imageId}", method = RequestMethod.GET)
@@ -150,7 +169,7 @@ public class ProductController extends BaseController{
         validateAdminLogin(session);
 
         if (productDao.productExists(productId)) {
-            imageRepository.addImageToProduct(productId, imageId);
+            imageRepository.getImageNameByProductId(imageId);
             response.getWriter().append("You have successfully set image with ID: " + imageId + " to product with ID: " + productId);
             return;
         }

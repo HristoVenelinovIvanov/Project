@@ -1,2 +1,9 @@
 library 'my-shared-library@master'
 import com.example.demo.controller.BaseController
+
+int useSomeLib(BaseController helper) {
+    helper.prepare()
+    return helper.count()
+}
+
+echo useSomeLib(new BaseController('some text'))

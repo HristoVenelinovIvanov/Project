@@ -1,1 +1,2 @@
 library 'my-shared-library@master'
+import com.example.demo.controller.BaseController

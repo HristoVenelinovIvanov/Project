@@ -1,10 +1,2 @@
-@Library('my-shared-library@1.0') _
-/* Using a version specifier, such as branch, tag, etc */
+@Library('controller')
 import com.example.demo.controller.BaseController
-
-int useSomeLib(BaseController controller) {
-    controller.prepare()
-    return controller.count()
-}
-
-echo useSomeLib(new BaseController('some text'))

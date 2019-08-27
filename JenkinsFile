@@ -1,5 +1,9 @@
-@Library('my-shared-library') _
-/* Using a version specifier, such as branch, tag, etc */
-@Library('my-shared-library@1.0') _
-/* Accessing multiple libraries with one statement */
-@Library(['my-shared-library', 'hristo.ivanov@upnetix.com']) _
+@Library('somelib')
+import com.mycorp.pipeline.somelib.Helper
+
+int useSomeLib(Helper helper) {
+    helper.prepare()
+    return helper.count()
+}
+
+echo useSomeLib(new Helper('some text'))

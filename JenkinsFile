@@ -1,2 +1,1 @@
-@Library('controller')
-import com.example.demo.controller.BaseController
+@Library('my-shared-library') _

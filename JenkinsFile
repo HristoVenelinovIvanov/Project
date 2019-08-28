@@ -1,4 +1,4 @@
-@Library("my-support-library") _
+@Library('JenkinsSharedLibrary') _
 
 pipeline {
 	agent { label 'master' }

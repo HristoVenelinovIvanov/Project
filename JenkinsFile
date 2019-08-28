@@ -1,6 +1,2 @@
-@Library('utils')
-import static org.foo.Utilities.*
-
-node {
-  mvn this, 'clean install'
-}
+def z = new com.example.demo.controller.Example.Groovy()
+z.checkOutFrom(https://github.com/HristoVenelinovIvanov/Project.git)

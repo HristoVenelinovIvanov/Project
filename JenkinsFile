@@ -1,5 +1,5 @@
-@Library('src')
-import com.example.demo.controller.OrderController
+@Library('src.main.java.com')
+import src.main.java.com.example.demo.controller.OrderController
 
 int useSomeLib(OrderController helper) {
     helper.prepare()

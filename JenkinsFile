@@ -1,4 +1,4 @@
-@Library('controller')
+@Library('src')
 import com.example.demo.controller.OrderController
 
 int useSomeLib(OrderController helper) {

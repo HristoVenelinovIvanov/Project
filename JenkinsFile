@@ -1,9 +1,9 @@
-library 'my-shared-library@master'
-import com.example.demo.controller.BaseController
+@Library('controller')
+import com.example.demo.controller.OrderController
 
-int useSomeLib(BaseController helper) {
+int useSomeLib(Helper helper) {
     helper.prepare()
     return helper.count()
 }
 
-echo useSomeLib(new BaseController('some text'))
+echo useSomeLib(new Helper('some text'))

@@ -1,4 +1,1 @@
-import groovy.lang.Binding
-
-def z = Example.Groovy()
-z.checkOutFrom(HristoVenelinovIvanov/Project.git)
+@Library('my-shared-library') _

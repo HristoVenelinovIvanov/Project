@@ -1,4 +1,4 @@
-@Library('src.main.java.com')
+@Library('src')
 import src.main.java.com.example.demo.controller.OrderController
 
 int useSomeLib(OrderController helper) {

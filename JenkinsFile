@@ -1,9 +1,9 @@
 @Library('controller')
 import com.example.demo.controller.OrderController
 
-int useSomeLib(Helper helper) {
+int useSomeLib(OrderController helper) {
     helper.prepare()
     return helper.count()
 }
 
-echo useSomeLib(new Helper('some text'))
+echo useSomeLib(new OrderController('some text'))

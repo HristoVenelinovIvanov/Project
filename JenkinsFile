@@ -1,9 +1,6 @@
-@Library('src')
-import src.main.java.com.example.demo.controller.OrderController
+@Library('utils')
+import static org.foo.Utilities.*
 
-int useSomeLib(OrderController helper) {
-    helper.prepare()
-    return helper.count()
+node {
+  mvn this, 'clean install'
 }
-
-echo useSomeLib(new OrderController('some text'))

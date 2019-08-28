@@ -1,3 +1,13 @@
-@Library("my-support-library") _
+@Library("JenkinsBuildScripts") _
 
-library 'my-shared-library'
+pipeline {
+	agent { label 'master' }
+
+	stages {
+		stage('Example stage') {
+			steps {
+				echo "Stage is running"
+			}
+		}
+	}
+}

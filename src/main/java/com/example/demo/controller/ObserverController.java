@@ -11,7 +11,6 @@ import com.example.demo.model.enums.Notification;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import static com.example.demo.model.enums.Notification.*;
@@ -31,7 +30,7 @@ public class ObserverController extends BaseController {
         if (validateAdminLogin(session)) {
 
             switch (note) {
-                case DISCOUNT:
+                default:
                     sendEmails(DISCOUNT);
                     break;
                 case BLACK_FRIDAY:

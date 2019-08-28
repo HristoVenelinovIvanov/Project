@@ -1,2 +1,4 @@
-def z = Example.Groovy()
+import groovy.lang.Binding
+
+ef z = Example.Groovy()
 z.checkOutFrom(HristoVenelinovIvanov/Project.git)

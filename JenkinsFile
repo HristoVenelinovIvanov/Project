@@ -1,2 +1,2 @@
-def z = com.example.demo.controller.Example.Groovy()
+def z = Example.Groovy()
 z.checkOutFrom(HristoVenelinovIvanov/Project.git)

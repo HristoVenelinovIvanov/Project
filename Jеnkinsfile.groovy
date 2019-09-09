@@ -5,11 +5,11 @@ pipeline {
       steps {
         bat 'mvn package'
         bat 'cd C:\\Users\\hristo.ivanov\\TechnomarketProject\\Project && git status'
-        bat 'git status'
-        bat 'git add .'
-        bat 'git commit -m "Push from Jenkinsfile"'
-        bat 'git push'
-        bat 'git status'
+        bat 'cd C:\\Users\\hristo.ivanov\\TechnomarketProject\\Project && git status'
+        bat 'cd C:\\Users\\hristo.ivanov\\TechnomarketProject\\Project && git add .'
+        bat 'cd C:\\Users\\hristo.ivanov\\TechnomarketProject\\Project && git commit -m "Push from Jenkinsfile"'
+        bat 'cd C:\\Users\\hristo.ivanov\\TechnomarketProject\\Project && git push'
+        bat 'cd C:\\Users\\hristo.ivanov\\TechnomarketProject\\Project && git status'
       }
     }
   }
